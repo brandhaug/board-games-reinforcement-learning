@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane prefHeight="800.0" prefWidth="1200.0" styleClass="anchor-pane" xmlns="http://javafx.com/javafx/8.0.172-ea"
+            xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.Controller">
+    <Pane fx:id="pane" prefHeight="800.0" prefWidth="1000.0"/>
+    <VBox fx:id="vBoxMenu" alignment="CENTER" layoutX="1000.0" prefHeight="800.0" prefWidth="200.0" styleClass="v-box">
+<!--        <RadioButton fx:id="psoRadioButton" mnemonicParsing="false" text="PSO" onAction="#toggleAlgorithm"/>-->
+<!--        <RadioButton fx:id="baRadioButton" mnemonicParsing="false" text="BA" onAction="#toggleAlgorithm"/>-->
+        <ComboBox fx:id="comboBox" onAction="#selectFile" styleClass="combo-box"/>
+<!--        <Label fx:id="generationLabel" styleClass="label" textAlignment="CENTER"/>-->
+<!--        <Label fx:id="makeSpanLabel" styleClass="label" textAlignment="CENTER"/>-->
+        <Button fx:id="startButton" onAction="#toggleStart" styleClass="button"/>
+        <Button fx:id="resetButton" onAction="#reset" styleClass="button" text="Reset"/>
+    </VBox>
+</AnchorPane>
