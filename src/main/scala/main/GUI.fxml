@@ -8,10 +8,11 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane prefHeight="800.0" prefWidth="1200.0" styleClass="anchor-pane" xmlns="http://javafx.com/javafx/8.0.172-ea"
+<?import javafx.scene.canvas.Canvas?>
+<AnchorPane prefHeight="800.0" prefWidth="1000.0" styleClass="anchor-pane" xmlns="http://javafx.com/javafx/8.0.172-ea"
             xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.Controller">
-    <Pane fx:id="pane" prefHeight="800.0" prefWidth="1000.0"/>
-    <VBox fx:id="vBoxMenu" alignment="CENTER" layoutX="1000.0" prefHeight="800.0" prefWidth="200.0" styleClass="v-box">
+    <Canvas fx:id="canvas" height="800.0" width="800.0"/>
+    <VBox fx:id="vBoxMenu" alignment="CENTER" layoutX="800.0" prefHeight="800.0" prefWidth="200.0" styleClass="v-box">
 <!--        <RadioButton fx:id="psoRadioButton" mnemonicParsing="false" text="PSO" onAction="#toggleAlgorithm"/>-->
 <!--        <RadioButton fx:id="baRadioButton" mnemonicParsing="false" text="BA" onAction="#toggleAlgorithm"/>-->
         <ComboBox fx:id="comboBox" onAction="#selectFile" styleClass="combo-box"/>

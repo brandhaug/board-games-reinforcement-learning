@@ -2,30 +2,26 @@ package main
 
 import java.io.File
 
+import pegsolitaire.{Board, MapReader, PegSolitaire}
+import reinforcementlearning.{Agent, State}
 import scalafx.animation.AnimationTimer
-import scalafx.scene.control.{Button, ComboBox, Label, RadioButton, ToggleGroup}
+import scalafx.scene.canvas.{Canvas, GraphicsContext}
+import scalafx.scene.control.{Button, ComboBox, Label}
 import scalafx.scene.layout.{Pane, VBox}
 import scalafxml.core.macros.sfxml
 
-import scala.collection.JavaConverters._
-
 @sfxml
-class Controller(val pane: Pane,
+class Controller(val canvas: Canvas,
                  val vBoxMenu: VBox,
                  val comboBox: ComboBox[String],
                  val startButton: Button,
                  val resetButton: Button) {
-  val mapsDirectoryName = "maps"
+  val environment: PegSolitaire.type = PegSolitaire
+  val mapsDirectoryName = "boards"
   val files: List[File] = listFiles(mapsDirectoryName)
   val fileNames: List[String] = files.map(file => file.getName).sorted
   var selectedFileName: String = initializeFileSelector(fileNames)
-
-  // Algorithm radio buttons
-//  val algorithmToggleGroup = new ToggleGroup()
-//  psoRadioButton.setToggleGroup(algorithmToggleGroup)
-//  baRadioButton.setToggleGroup(algorithmToggleGroup)
-//  psoRadioButton.setSelected(true)
-//  var selectedAlgorithm: AlgorithmEnum = AlgorithmEnum.ParticleSwarmOptimization
+  val gc: GraphicsContext = canvas.graphicsContext2D
 
   var animationTimer: AnimationTimer = _
 
@@ -36,35 +32,41 @@ class Controller(val pane: Pane,
 
   def initialize(): Unit = {
     initializeGui()
-//    val (jobs, machines): (Seq[Job], Seq[Machine]) = ProblemFileReader.readFile(directoryName, selectedFileName)
-//    val jssp: JSSP                                 = new JSSP(jobs, machines, selectedAlgorithm)
+    val board = initializeBoard()
+    board.render(gc)
+//    val initialState: State = environment.state(board)
+//    val agent = Agent(initialState)
+//    var previousState: State = initialState
 
-//    var previousState: Option[State] = None
+    animationTimer = AnimationTimer(_ => {
+      if (!paused) {
+//        val action = agent.act(previousState)
+//        val currentState: State = environment.step(previousState, action)
 
-    animationTimer = AnimationTimer(
-      _ => {
-        if (!paused) {
-//          val currentState: State = jssp.tick(previousState)
-
-//          previousState = Some(currentState)
-//          render(currentState.generation, currentState.bestSchedule, currentState.bestMakeSpan, machines)
-        }
+//        previousState = currentState
+//        render(board, currentState)
       }
-    )
+    })
     animationTimer.start()
   }
 
-  def render(): Unit = { // (generation: Int, bestSchedule: Seq[OperationTimeSlot], bestMakeSpan: Int, machines: Seq[Machine]
-//    generationLabel.setText("Generation: " + generation)
-//    makeSpanLabel.setText("Make Span: " + bestMakeSpan)
+  def render(board: Board, state: State): Unit = { // (generation: Int, bestSchedule: Seq[OperationTimeSlot], bestMakeSpan: Int, machines: Seq[Machine]
+    gc.clearRect(0, 0, canvas.getWidth, canvas.getHeight)
+    board.render(gc)
+    //    generationLabel.setText("Generation: " + generation)
+    //    makeSpanLabel.setText("Make Span: " + bestMakeSpan)
   }
-
 
   def initializeGui(): Unit = {
     startButton.setText("Start")
     comboBox.setVisible(true)
-//    generationLabel.setText("Generation: -")
-//    makeSpanLabel.setText("Make span: -")
+    //    generationLabel.setText("Generation: -")
+    //    makeSpanLabel.setText("Make span: -")
+  }
+
+  def initializeBoard(): Board = {
+    val selectedFile = files.find(file => file.getName == selectedFileName).get
+    MapReader.readFile(selectedFile)
   }
 
   def initializeFileSelector(fileNames: List[String]): String = {
@@ -74,9 +76,8 @@ class Controller(val pane: Pane,
     selectedFileName
   }
 
-
   def listFiles(directoryName: String): List[File] = {
-    val path   = getClass.getResource(directoryName)
+    val path = getClass.getResource(directoryName)
     val folder = new File(path.getFile)
     if (folder.exists && folder.isDirectory) {
       folder.listFiles.toList
@@ -84,19 +85,6 @@ class Controller(val pane: Pane,
       List[File]()
     }
   }
-
-  /**
-   * ScalaFX functions
-   */
-//  def toggleAlgorithm(): Unit = {
-//    selectedAlgorithm = {
-//      if (psoRadioButton.selected()) AlgorithmEnum.ParticleSwarmOptimization
-//      else if (baRadioButton.selected()) AlgorithmEnum.BeesAlgorithm
-//      else throw new Error("Error in algorithm radio buttons")
-//    }
-//
-//    reset()
-//  }
 
   def selectFile(): Unit = {
     selectedFileName = comboBox.getValue.toString
@@ -116,7 +104,12 @@ class Controller(val pane: Pane,
   def reset(): Unit = {
     paused = true
     animationTimer.stop()
-    pane.children.clear()
+    gc.clearRect(0, 0, canvas.getWidth, canvas.getHeight)
     initialize()
   }
+}
+
+object Canvas {
+  val width = 800
+  val height = 800
 }
