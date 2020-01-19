@@ -2,17 +2,22 @@ package main
 
 import java.io.File
 
-import pegsolitaire.{Board, MapReader, PegSolitaire}
-import reinforcementlearning.{Agent, State}
+import environment.State
+import environment.pegsolitaire.{PegSolitaire, PegSolitaireFileReader}
+import agent.enums.AgentType.AgentType
+import agent.Agent
+import agent.enums.AgentType
 import scalafx.animation.AnimationTimer
 import scalafx.scene.canvas.{Canvas, GraphicsContext}
-import scalafx.scene.control.{Button, ComboBox, Label}
+import scalafx.scene.control.{Button, ComboBox, Label, RadioButton, ToggleGroup}
 import scalafx.scene.layout.{Pane, VBox}
 import scalafxml.core.macros.sfxml
 
 @sfxml
 class Controller(val canvas: Canvas,
                  val vBoxMenu: VBox,
+                 val tableLookupRadioButton: RadioButton,
+                 val neuralNetworkRadioButton: RadioButton,
                  val comboBox: ComboBox[String],
                  val startButton: Button,
                  val resetButton: Button) {
@@ -23,6 +28,13 @@ class Controller(val canvas: Canvas,
   var selectedFileName: String = initializeFileSelector(fileNames)
   val gc: GraphicsContext = canvas.graphicsContext2D
 
+  // Algorithm radio buttons
+  val algorithmToggleGroup = new ToggleGroup()
+  tableLookupRadioButton.setToggleGroup(algorithmToggleGroup)
+  neuralNetworkRadioButton.setToggleGroup(algorithmToggleGroup)
+  tableLookupRadioButton.setSelected(true)
+  var selectedAgentType: AgentType = AgentType.TableLookup
+
   var animationTimer: AnimationTimer = _
 
   // States
@@ -32,10 +44,10 @@ class Controller(val canvas: Canvas,
 
   def initialize(): Unit = {
     initializeGui()
-    val board = initializeBoard()
-    board.render(gc)
+    val pegSolitaire = initializePegSolitaire()
+    pegSolitaire.render(gc)
 //    val initialState: State = environment.state(board)
-//    val agent = Agent(initialState)
+//    val agent = Agent(selectedAgentType, initialState, )
 //    var previousState: State = initialState
 
     animationTimer = AnimationTimer(_ => {
@@ -50,9 +62,9 @@ class Controller(val canvas: Canvas,
     animationTimer.start()
   }
 
-  def render(board: Board, state: State): Unit = { // (generation: Int, bestSchedule: Seq[OperationTimeSlot], bestMakeSpan: Int, machines: Seq[Machine]
+  def render(pegSolitaire: PegSolitaire, state: State): Unit = { // (generation: Int, bestSchedule: Seq[OperationTimeSlot], bestMakeSpan: Int, machines: Seq[Machine]
     gc.clearRect(0, 0, canvas.getWidth, canvas.getHeight)
-    board.render(gc)
+    pegSolitaire.render(gc)
     //    generationLabel.setText("Generation: " + generation)
     //    makeSpanLabel.setText("Make Span: " + bestMakeSpan)
   }
@@ -64,9 +76,9 @@ class Controller(val canvas: Canvas,
     //    makeSpanLabel.setText("Make span: -")
   }
 
-  def initializeBoard(): Board = {
+  def initializePegSolitaire(): PegSolitaire = {
     val selectedFile = files.find(file => file.getName == selectedFileName).get
-    MapReader.readFile(selectedFile)
+    PegSolitaireFileReader.readFile(selectedFile)
   }
 
   def initializeFileSelector(fileNames: List[String]): String = {
@@ -85,6 +97,17 @@ class Controller(val canvas: Canvas,
       List[File]()
     }
   }
+
+  def toggleAlgorithm(): Unit = {
+    selectedAgentType = {
+      if (tableLookupRadioButton.selected()) AgentType.TableLookup
+      else if (neuralNetworkRadioButton.selected()) AgentType.NeuralNetwork
+      else throw new Error("Error in algorithm radio buttons")
+    }
+
+    reset()
+  }
+
 
   def selectFile(): Unit = {
     selectedFileName = comboBox.getValue.toString
