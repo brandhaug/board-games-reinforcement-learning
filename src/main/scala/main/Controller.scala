@@ -2,12 +2,14 @@ package main
 
 import java.io.File
 
-import environment.State
+import environment.{Environment, State}
 import environment.pegsolitaire.{PegSolitaire, PegSolitaireFileReader}
 import agent.enums.AgentType.AgentType
 import agent.Agent
 import agent.enums.AgentType
+import environment.enums.EnvironmentType
 import scalafx.animation.AnimationTimer
+import scalafx.application.JFXApp.Parameters
 import scalafx.scene.canvas.{Canvas, GraphicsContext}
 import scalafx.scene.control.{Button, ComboBox, Label, RadioButton, ToggleGroup}
 import scalafx.scene.layout.{Pane, VBox}
@@ -21,7 +23,6 @@ class Controller(val canvas: Canvas,
                  val comboBox: ComboBox[String],
                  val startButton: Button,
                  val resetButton: Button) {
-  val environment: PegSolitaire.type = PegSolitaire
   val mapsDirectoryName = "boards"
   val files: List[File] = listFiles(mapsDirectoryName)
   val fileNames: List[String] = files.map(file => file.getName).sorted
@@ -44,10 +45,10 @@ class Controller(val canvas: Canvas,
 
   def initialize(): Unit = {
     initializeGui()
-    val pegSolitaire = initializePegSolitaire()
-    pegSolitaire.render(gc)
+    val environment = initializeEnvironment()
+    environment.render(gc)
 //    val initialState: State = environment.state(board)
-//    val agent = Agent(selectedAgentType, initialState, )
+//    val agent = Agent(selectedAgentType, initialState)
 //    var previousState: State = initialState
 
     animationTimer = AnimationTimer(_ => {
@@ -62,9 +63,9 @@ class Controller(val canvas: Canvas,
     animationTimer.start()
   }
 
-  def render(pegSolitaire: PegSolitaire, state: State): Unit = { // (generation: Int, bestSchedule: Seq[OperationTimeSlot], bestMakeSpan: Int, machines: Seq[Machine]
+  def render(environment: Environment): Unit = {
     gc.clearRect(0, 0, canvas.getWidth, canvas.getHeight)
-    pegSolitaire.render(gc)
+    environment.render(gc)
     //    generationLabel.setText("Generation: " + generation)
     //    makeSpanLabel.setText("Make Span: " + bestMakeSpan)
   }
@@ -76,9 +77,13 @@ class Controller(val canvas: Canvas,
     //    makeSpanLabel.setText("Make span: -")
   }
 
-  def initializePegSolitaire(): PegSolitaire = {
+  def initializeEnvironment(): Environment = {
     val selectedFile = files.find(file => file.getName == selectedFileName).get
-    PegSolitaireFileReader.readFile(selectedFile)
+
+    Arguments.environmentType match {
+      case EnvironmentType.PegSolitaire =>
+        PegSolitaireFileReader.readFile(selectedFile)
+    }
   }
 
   def initializeFileSelector(fileNames: List[String]): String = {
@@ -107,7 +112,6 @@ class Controller(val canvas: Canvas,
 
     reset()
   }
-
 
   def selectFile(): Unit = {
     selectedFileName = comboBox.getValue.toString

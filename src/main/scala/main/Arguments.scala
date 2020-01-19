@@ -1,4 +1,12 @@
-object Parameters {
+package main
+
+import environment.enums.EnvironmentType
+import environment.enums.EnvironmentType.EnvironmentType
+
+object Arguments {
+  // Environment
+  val environmentType: EnvironmentType = EnvironmentType.PegSolitaire
+
   // GUI
   val stepDelay = 1
 
