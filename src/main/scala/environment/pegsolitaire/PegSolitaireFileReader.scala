@@ -2,12 +2,16 @@ package environment.pegsolitaire
 
 import java.io.File
 
+import environment.Environment
+import environment.pegsolitaire.enums.PegBoardType.PegBoardType
 import environment.pegsolitaire.enums.{PegBoardType, PegCellType}
 
 import scala.io.Source
+import scala.util.Random
 
 object PegSolitaireFileReader {
-  def readFile(selectedFile: File): PegSolitaire = {
+
+  def readFile(selectedFile: File): Environment = {
     val lines: List[String] = Source.fromFile(selectedFile).getLines.toList
     val first :: rest = lines
 
@@ -18,18 +22,29 @@ object PegSolitaireFileReader {
     }
 
     val grid = for {
-      line <- rest
+      (line, y) <- rest.zipWithIndex
       lineList = line.split("").toList
+      gridRow = extractGridRowFromLine(lineList, y, boardType)
     } yield {
-      lineList.map {
-        case "-" => PegCell(PegCellType.None, boardType)
-        case "1" => PegCell(PegCellType.Peg, boardType)
-        case "0" => PegCell(PegCellType.Empty, boardType)
-        case _   => PegCell(PegCellType.None, boardType)
-      }
+      gridRow
     }
 
     val pegBoard = PegBoard(grid, boardType)
     PegSolitaire(pegBoard)
+  }
+
+  def extractGridRowFromLine(lineList: List[String],
+                             y: Int,
+                             boardType: PegBoardType): List[PegCell] = {
+    for {
+      (cellString, x) <- lineList.zipWithIndex
+    } yield {
+      cellString match {
+        case "-" => PegCell(Random.nextInt, x, y, PegCellType.None, boardType)
+        case "1" => PegCell(Random.nextInt, x, y, PegCellType.Peg, boardType)
+        case "0" => PegCell(Random.nextInt, x, y, PegCellType.Empty, boardType)
+        case _   => PegCell(Random.nextInt, x, y, PegCellType.None, boardType)
+      }
+    }
   }
 }

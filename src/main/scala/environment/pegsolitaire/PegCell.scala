@@ -6,7 +6,15 @@ import environment.pegsolitaire.enums.PegCellType.PegCellType
 import scalafx.scene.canvas.GraphicsContext
 import scalafx.scene.paint.Color
 
-case class PegCell(cellType: PegCellType, boardType: PegBoardType) {
+case class PegCell(id: Int, x: Int, y: Int, cellType: PegCellType, boardType: PegBoardType) {
+  val isEmpty: Boolean = {
+    cellType == PegCellType.Empty
+  }
+
+  val isPeg: Boolean = {
+    cellType == PegCellType.Peg
+  }
+
   val color: Color = {
     cellType match {
       case PegCellType.Peg   => Color.Red
@@ -28,7 +36,5 @@ case class PegCell(cellType: PegCellType, boardType: PegBoardType) {
     gc.setStroke(Color.Black)
     gc.fillRect(startX, startY, width, height)
     gc.strokeRect(startX, startY, width, height)
-
   }
 }
-

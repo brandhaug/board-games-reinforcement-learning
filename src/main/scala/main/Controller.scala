@@ -2,10 +2,9 @@ package main
 
 import java.io.File
 
-import environment.{Environment, State}
+import environment.{Environment}
 import environment.pegsolitaire.{PegSolitaire, PegSolitaireFileReader}
 import agent.enums.AgentType.AgentType
-import agent.Agent
 import agent.enums.AgentType
 import environment.enums.EnvironmentType
 import scalafx.animation.AnimationTimer
@@ -15,6 +14,8 @@ import scalafx.scene.control.{Button, ComboBox, Label, RadioButton, ToggleGroup}
 import scalafx.scene.layout.{Pane, VBox}
 import scalafxml.core.macros.sfxml
 
+import scala.util.Random
+
 @sfxml
 class Controller(val canvas: Canvas,
                  val vBoxMenu: VBox,
@@ -23,11 +24,11 @@ class Controller(val canvas: Canvas,
                  val comboBox: ComboBox[String],
                  val startButton: Button,
                  val resetButton: Button) {
-  val mapsDirectoryName = "boards"
-  val files: List[File] = listFiles(mapsDirectoryName)
-  val fileNames: List[String] = files.map(file => file.getName).sorted
+  val mapsDirectoryName        = "boards"
+  val files: List[File]        = listFiles(mapsDirectoryName)
+  val fileNames: List[String]  = files.map(file => file.getName).sorted
   var selectedFileName: String = initializeFileSelector(fileNames)
-  val gc: GraphicsContext = canvas.graphicsContext2D
+  val gc: GraphicsContext      = canvas.graphicsContext2D
 
   // Algorithm radio buttons
   val algorithmToggleGroup = new ToggleGroup()
@@ -45,19 +46,19 @@ class Controller(val canvas: Canvas,
 
   def initialize(): Unit = {
     initializeGui()
-    val environment = initializeEnvironment()
-    environment.render(gc)
-//    val initialState: State = environment.state(board)
-//    val agent = Agent(selectedAgentType, initialState)
-//    var previousState: State = initialState
+
+    var previousEnvironment: Environment = initializeEnvironment()
+    previousEnvironment.render(gc)
+    //    val agent = Agent(selectedAgentType, initialState)
 
     animationTimer = AnimationTimer(_ => {
-      if (!paused) {
-//        val action = agent.act(previousState)
-//        val currentState: State = environment.step(previousState, action)
+      if (!paused && previousEnvironment.possibleActions.nonEmpty) {
+        val actionIndex = Random.nextInt(previousEnvironment.possibleActions.length)
+        val action = previousEnvironment.possibleActions(actionIndex) //agent.act(previousEnvironment)
+        val currentEnvironment: Environment = previousEnvironment.step(action)
 
-//        previousState = currentState
-//        render(board, currentState)
+        previousEnvironment = currentEnvironment
+        render(currentEnvironment)
       }
     })
     animationTimer.start()
@@ -94,7 +95,7 @@ class Controller(val canvas: Canvas,
   }
 
   def listFiles(directoryName: String): List[File] = {
-    val path = getClass.getResource(directoryName)
+    val path   = getClass.getResource(directoryName)
     val folder = new File(path.getFile)
     if (folder.exists && folder.isDirectory) {
       folder.listFiles.toList
@@ -137,6 +138,6 @@ class Controller(val canvas: Canvas,
 }
 
 object Canvas {
-  val width = 800
+  val width  = 800
   val height = 800
 }
