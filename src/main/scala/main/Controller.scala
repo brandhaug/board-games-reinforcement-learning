@@ -2,13 +2,12 @@ package main
 
 import java.io.File
 
-import environment.{Environment}
+import environment.Environment
 import environment.pegsolitaire.{PegSolitaire, PegSolitaireFileReader}
 import agent.enums.AgentType.AgentType
 import agent.enums.AgentType
 import environment.enums.EnvironmentType
 import scalafx.animation.AnimationTimer
-import scalafx.application.JFXApp.Parameters
 import scalafx.scene.canvas.{Canvas, GraphicsContext}
 import scalafx.scene.control.{Button, ComboBox, Label, RadioButton, ToggleGroup}
 import scalafx.scene.layout.{Pane, VBox}

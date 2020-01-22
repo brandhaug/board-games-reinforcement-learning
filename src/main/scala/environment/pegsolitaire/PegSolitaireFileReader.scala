@@ -40,10 +40,10 @@ object PegSolitaireFileReader {
       (cellString, x) <- lineList.zipWithIndex
     } yield {
       cellString match {
-        case "-" => PegCell(Random.nextInt, x, y, PegCellType.None, boardType)
-        case "1" => PegCell(Random.nextInt, x, y, PegCellType.Peg, boardType)
-        case "0" => PegCell(Random.nextInt, x, y, PegCellType.Empty, boardType)
-        case _   => PegCell(Random.nextInt, x, y, PegCellType.None, boardType)
+        case "-" => PegCell(Random.nextLong().toString, x, y, PegCellType.None, boardType)
+        case "1" => PegCell(Random.nextLong().toString, x, y, PegCellType.Peg, boardType)
+        case "0" => PegCell(Random.nextLong().toString, x, y, PegCellType.Empty, boardType)
+        case _   => PegCell(Random.nextLong().toString, x, y, PegCellType.None, boardType)
       }
     }
   }

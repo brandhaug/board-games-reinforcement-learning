@@ -1,10 +1,10 @@
 package environment
 
-import environment.pegsolitaire.PegCell
+import environment.enums.ActionType.ActionType
 
 abstract class Action {
-  val id: Int
-  val from: PegCell
-  val to: PegCell
-  val over: PegCell
+  val id: String
+  val x: Int
+  val y: Int
+  val actionType: ActionType
 }
