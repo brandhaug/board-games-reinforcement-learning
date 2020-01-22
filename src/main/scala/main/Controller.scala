@@ -7,11 +7,14 @@ import environment.pegsolitaire.{PegSolitaire, PegSolitaireFileReader}
 import agent.enums.AgentType.AgentType
 import agent.enums.AgentType
 import environment.enums.EnvironmentType
-import scalafx.animation.AnimationTimer
+import scalafx.animation.{AnimationTimer, KeyFrame, Timeline}
+import scalafx.event
 import scalafx.scene.canvas.{Canvas, GraphicsContext}
 import scalafx.scene.control.{Button, ComboBox, Label, RadioButton, ToggleGroup}
 import scalafx.scene.layout.{Pane, VBox}
+import scalafx.util.Duration
 import scalafxml.core.macros.sfxml
+import scalafx.Includes._
 
 import scala.util.Random
 
@@ -36,7 +39,7 @@ class Controller(val canvas: Canvas,
   tableLookupRadioButton.setSelected(true)
   var selectedAgentType: AgentType = AgentType.TableLookup
 
-  var animationTimer: AnimationTimer = _
+  var timeline: Timeline = _
 
   // States
   var paused = true
@@ -50,17 +53,23 @@ class Controller(val canvas: Canvas,
     previousEnvironment.render(gc)
     //    val agent = Agent(selectedAgentType, initialState)
 
-    animationTimer = AnimationTimer(_ => {
-      if (!paused && previousEnvironment.possibleActions.nonEmpty) {
-        val actionIndex = Random.nextInt(previousEnvironment.possibleActions.length)
-        val action = previousEnvironment.possibleActions(actionIndex) //agent.act(previousEnvironment)
-        val currentEnvironment: Environment = previousEnvironment.step(action)
+    timeline = new Timeline {
+      cycleCount = Timeline.Indefinite
+      keyFrames = Seq(
+        KeyFrame(
+          Arguments.stepDelay s,
+          onFinished = () => {
+            if (previousEnvironment.possibleActions.isEmpty && !paused) toggleStart()
 
-        previousEnvironment = currentEnvironment
-        render(currentEnvironment)
-      }
-    })
-    animationTimer.start()
+            val actionIndex                     = Random.nextInt(previousEnvironment.possibleActions.length)
+            val action                          = previousEnvironment.possibleActions(actionIndex) //agent.act(previousEnvironment)
+            val currentEnvironment: Environment = previousEnvironment.step(action)
+
+            previousEnvironment = currentEnvironment
+            render(currentEnvironment)
+          }
+        ))
+    }
   }
 
   def render(environment: Environment): Unit = {
@@ -122,15 +131,17 @@ class Controller(val canvas: Canvas,
     paused = !paused
 
     if (paused) {
+      timeline.pause()
       startButton.setText("Start")
     } else {
+      timeline.play()
       startButton.setText("Pause")
     }
   }
 
   def reset(): Unit = {
     paused = true
-    animationTimer.stop()
+    timeline.stop()
     gc.clearRect(0, 0, canvas.getWidth, canvas.getHeight)
     initialize()
   }
