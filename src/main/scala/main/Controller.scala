@@ -3,7 +3,7 @@ package main
 import java.io.File
 
 import agent.{Agent, AgentType, Memory, NetworkAgent, RandomAgent, TableAgent}
-import environment.{Environment, EnvironmentType}
+import environment.{BoardType, Environment, EnvironmentType}
 import agent.AgentType.AgentType
 import environment.pegsolitaire.PegSolitaireFileReader
 import scalafx.animation.{KeyFrame, Timeline}
@@ -12,6 +12,7 @@ import scalafx.scene.control.{Button, ComboBox, Label, RadioButton, ToggleGroup}
 import scalafx.scene.layout.VBox
 import scalafxml.core.macros.sfxml
 import scalafx.Includes._
+import scalafx.scene.paint.Color
 
 @sfxml
 class Controller(val canvas: Canvas,
@@ -47,11 +48,10 @@ class Controller(val canvas: Canvas,
   initialize()
 
   def initialize(): Unit = {
-    resetGui()
-
     initialEnvironment = initializeEnvironment()
+    resetGui()
     agent = initializeAgent(initialEnvironment)
-    initialEnvironment.render(gc)
+    render(initialEnvironment)
 
     var environment = initialEnvironment
 
@@ -98,12 +98,30 @@ class Controller(val canvas: Canvas,
   }
 
   def render(environment: Environment): Unit = {
+    gc.setFill(Color.Black)
     gc.clearRect(0, 0, canvas.getWidth, canvas.getHeight)
+    gc.fillRect(0, 0, canvas.getWidth, canvas.getHeight)
     environment.render(gc)
+
   }
 
   def resetGui(): Unit = {
     startButton.setText("Start")
+    resetCanvas()
+  }
+
+  def resetCanvas(): Unit = {
+    gc.clearRect(0, 0, canvas.getWidth, canvas.getHeight)
+    initialEnvironment.board.boardType match {
+      case BoardType.Diamond =>
+        canvas.setRotate(45)
+        canvas.setScaleX(0.7)
+        canvas.setScaleY(0.7)
+      case _                 =>
+        canvas.setRotate(0)
+        canvas.setScaleX(1)
+        canvas.setScaleY(1)
+    }
   }
 
   def initializeEnvironment(): Environment = {
@@ -124,7 +142,7 @@ class Controller(val canvas: Canvas,
       case AgentType.TableLookup   => TableAgent(environment)
       case AgentType.NeuralNetwork => NetworkAgent(environment)
       case AgentType.Random        => RandomAgent(environment)
-      case _ => throw new Exception("Unknown agent")
+      case _                       => throw new Exception("Unknown agent")
     }
   }
 
@@ -182,7 +200,6 @@ class Controller(val canvas: Canvas,
   def reset(): Unit = {
     paused = true
     timeline.stop()
-    gc.clearRect(0, 0, canvas.getWidth, canvas.getHeight)
     initialize()
   }
 

@@ -9,18 +9,17 @@
 <?import javafx.scene.layout.VBox?>
 
 <?import javafx.scene.canvas.Canvas?>
-<AnchorPane prefHeight="800.0" prefWidth="1000.0" styleClass="anchor-pane" xmlns="http://javafx.com/javafx/8.0.172-ea"
-            xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.Controller">
-    <Canvas fx:id="canvas" height="800.0" width="800.0"/>
+<AnchorPane prefHeight="800.0" prefWidth="1000.0" styleClass="anchor-pane" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.Controller">
+    <Pane prefHeight="800.0" prefWidth="800.0" styleClass="canvas-pane">
+        <Canvas fx:id="canvas" height="800.0" width="800.0"/>
+    </Pane>
     <VBox fx:id="vBoxMenu" alignment="CENTER" layoutX="800.0" prefHeight="800.0" prefWidth="200.0" styleClass="v-box">
         <ComboBox fx:id="comboBox" onAction="#selectFile" styleClass="combo-box"/>
         <RadioButton fx:id="tableLookupRadioButton" mnemonicParsing="false" text="Table lookup" onAction="#selectAgentType"/>
         <RadioButton fx:id="neuralNetworkRadioButton" mnemonicParsing="false" text="Neural network" onAction="#selectAgentType"/>
         <RadioButton fx:id="randomRadioButton" mnemonicParsing="false" text="Random" onAction="#selectAgentType"/>
-
         <Label fx:id="infoLabel" styleClass="label" textAlignment="CENTER"/>
-<!--        <Label fx:id="makeSpanLabel" styleClass="label" textAlignment="CENTER"/>-->
-        <Button fx:id="trainButton" onAction="#train" styleClass="button"/>
+        <Button fx:id="trainButton" onAction="#train" styleClass="button" text="Train"/>
         <Button fx:id="startButton" onAction="#toggleStart" styleClass="button"/>
         <Button fx:id="resetButton" onAction="#reset" styleClass="button" text="Reset"/>
     </VBox>
