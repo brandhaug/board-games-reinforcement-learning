@@ -2,44 +2,50 @@ package main
 
 import java.io.File
 
-import environment.Environment
-import environment.pegsolitaire.{PegSolitaire, PegSolitaireFileReader}
-import agent.enums.AgentType.AgentType
-import agent.enums.AgentType
-import environment.enums.EnvironmentType
-import scalafx.animation.{AnimationTimer, KeyFrame, Timeline}
-import scalafx.event
+import agent.{Agent, AgentType, Memory, NetworkAgent, RandomAgent, TableAgent}
+import environment.{ActionType, Environment, EnvironmentType}
+import agent.AgentType.AgentType
+import filereader.PegSolitaireFileReader
+import scalafx.animation.{KeyFrame, Timeline}
 import scalafx.scene.canvas.{Canvas, GraphicsContext}
 import scalafx.scene.control.{Button, ComboBox, Label, RadioButton, ToggleGroup}
-import scalafx.scene.layout.{Pane, VBox}
-import scalafx.util.Duration
+import scalafx.scene.layout.VBox
 import scalafxml.core.macros.sfxml
 import scalafx.Includes._
 
-import scala.util.Random
+import scala.io.Source
 
 @sfxml
 class Controller(val canvas: Canvas,
                  val vBoxMenu: VBox,
                  val tableLookupRadioButton: RadioButton,
                  val neuralNetworkRadioButton: RadioButton,
+                 val randomRadioButton: RadioButton,
+                 val infoLabel: Label,
                  val comboBox: ComboBox[String],
+                 val trainButton: Button,
                  val startButton: Button,
                  val resetButton: Button) {
-  val mapsDirectoryName        = "boards"
-  val files: List[File]        = listFiles(mapsDirectoryName)
+  // Selected file
+  val files: List[File]        = listFiles(Arguments.mapsDirectoryName)
   val fileNames: List[String]  = files.map(file => file.getName).sorted
   var selectedFileName: String = initializeFileSelector(fileNames)
+
+  // Canvas
   val gc: GraphicsContext      = canvas.graphicsContext2D
 
   // Algorithm radio buttons
   val algorithmToggleGroup = new ToggleGroup()
   tableLookupRadioButton.setToggleGroup(algorithmToggleGroup)
   neuralNetworkRadioButton.setToggleGroup(algorithmToggleGroup)
+  randomRadioButton.setToggleGroup(algorithmToggleGroup)
   tableLookupRadioButton.setSelected(true)
   var selectedAgentType: AgentType = AgentType.TableLookup
 
+  // Global variables
   var timeline: Timeline = _
+  var agent: Agent       = _
+  var initialEnvironment: Environment = _
 
   // States
   var paused = true
@@ -49,9 +55,11 @@ class Controller(val canvas: Canvas,
   def initialize(): Unit = {
     initializeGui()
 
-    var previousEnvironment: Environment = initializeEnvironment()
-    previousEnvironment.render(gc)
-    //    val agent = Agent(selectedAgentType, initialState)
+    initialEnvironment = initializeEnvironment()
+    agent = initializeAgent(initialEnvironment)
+    initialEnvironment.render(gc)
+
+    var environment = initialEnvironment
 
     timeline = new Timeline {
       cycleCount = Timeline.Indefinite
@@ -59,31 +67,50 @@ class Controller(val canvas: Canvas,
         KeyFrame(
           Arguments.stepDelay s,
           onFinished = () => {
-            if (previousEnvironment.possibleActions.isEmpty && !paused) toggleStart()
-
-            val actionIndex                     = Random.nextInt(previousEnvironment.possibleActions.length)
-            val action                          = previousEnvironment.possibleActions(actionIndex) //agent.act(previousEnvironment)
-            val currentEnvironment: Environment = previousEnvironment.step(action)
-
-            previousEnvironment = currentEnvironment
-            render(currentEnvironment)
+            if (environment.possibleActions.isEmpty && !paused) {
+              toggleStart()
+            } else {
+              val action             = agent.act(environment)
+              val nextEnvironment = environment.step(action)
+              environment = nextEnvironment
+              render(nextEnvironment)
+            }
           }
         ))
     }
   }
 
+  def train(): Unit = {
+    train(1)
+  }
+
+  def train(episode: Int): Unit = {
+    println(f"Training: $episode / ${Arguments.episodes}")
+    var environment = initialEnvironment
+    var memories    = List.empty[Memory]
+
+    while (environment.possibleActions.nonEmpty) {
+      val action             = agent.act(environment)
+      val nextEnvironment = environment.step(action)
+      val nextMemories    = memories :+ Memory(environment, action, nextEnvironment)
+      environment = nextEnvironment
+      memories = nextMemories
+    }
+
+    println(f"Final reward: ${memories.last.environment.reward}")
+
+    agent = agent.train(memories)
+    if (episode != Arguments.episodes) train(episode + 1)
+  }
+
   def render(environment: Environment): Unit = {
     gc.clearRect(0, 0, canvas.getWidth, canvas.getHeight)
     environment.render(gc)
-    //    generationLabel.setText("Generation: " + generation)
-    //    makeSpanLabel.setText("Make Span: " + bestMakeSpan)
   }
 
   def initializeGui(): Unit = {
     startButton.setText("Start")
     comboBox.setVisible(true)
-    //    generationLabel.setText("Generation: -")
-    //    makeSpanLabel.setText("Make span: -")
   }
 
   def initializeEnvironment(): Environment = {
@@ -92,6 +119,18 @@ class Controller(val canvas: Canvas,
     Arguments.environmentType match {
       case EnvironmentType.PegSolitaire =>
         PegSolitaireFileReader.readFile(selectedFile)
+    }
+  }
+
+  def initializeAgent(environment: Environment): Agent = {
+    val actionTypes = Arguments.environmentType match {
+      case EnvironmentType.PegSolitaire => List(ActionType.Left, ActionType.Right, ActionType.Up, ActionType.Down)
+    }
+
+    selectedAgentType match {
+      case AgentType.TableLookup   => TableAgent(environment, actionTypes)
+      case AgentType.NeuralNetwork => NetworkAgent(environment, actionTypes)
+      case AgentType.Random        => RandomAgent(environment, actionTypes)
     }
   }
 
@@ -112,10 +151,11 @@ class Controller(val canvas: Canvas,
     }
   }
 
-  def toggleAlgorithm(): Unit = {
+  def selectAgentType(): Unit = {
     selectedAgentType = {
       if (tableLookupRadioButton.selected()) AgentType.TableLookup
       else if (neuralNetworkRadioButton.selected()) AgentType.NeuralNetwork
+      else if (randomRadioButton.selected()) AgentType.Random
       else throw new Error("Error in algorithm radio buttons")
     }
 
@@ -145,6 +185,7 @@ class Controller(val canvas: Canvas,
     gc.clearRect(0, 0, canvas.getWidth, canvas.getHeight)
     initialize()
   }
+
 }
 
 object Canvas {

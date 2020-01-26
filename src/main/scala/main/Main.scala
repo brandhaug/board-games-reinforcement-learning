@@ -3,6 +3,7 @@ package main
 import java.io.IOException
 import java.net.URL
 
+import javafx.scene.Parent
 import scalafx.application.JFXApp
 import scalafx.application.JFXApp.PrimaryStage
 import scalafx.scene.Scene
@@ -15,7 +16,7 @@ object Main extends JFXApp {
     throw new IOException("Cannot load resource: GUI.fxml")
   }
 
-  val root = FXMLView(resource, NoDependencyResolver)
+  val root: Parent = FXMLView(resource, NoDependencyResolver)
   root.getStylesheets.add(getClass.getResource("styles.css").toExternalForm)
 
   stage = new PrimaryStage() {

@@ -1,6 +1,6 @@
 package environment.pegsolitaire
 
-import environment.pegsolitaire.enums.PegBoardType.PegBoardType
+import PegBoardType.PegBoardType
 import main.Canvas
 import scalafx.scene.canvas.GraphicsContext
 
@@ -22,3 +22,4 @@ case class PegBoard(grid: List[List[PegCell]], boardType: PegBoardType) {
     } yield { () }
   }
 }
+

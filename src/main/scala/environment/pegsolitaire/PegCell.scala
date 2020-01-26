@@ -1,12 +1,12 @@
 package environment.pegsolitaire
 
-import environment.pegsolitaire.enums.PegBoardType.PegBoardType
-import environment.pegsolitaire.enums.PegCellType
-import environment.pegsolitaire.enums.PegCellType.PegCellType
+import PegBoardType.PegBoardType
+import environment.pegsolitaire.PegCellType.PegCellType
 import scalafx.scene.canvas.GraphicsContext
+import scalafx.scene.control.Cell
 import scalafx.scene.paint.Color
 
-case class PegCell(id: String, x: Int, y: Int, cellType: PegCellType, boardType: PegBoardType) {
+case class PegCell(x: Int, y: Int, cellType: PegCellType, boardType: PegBoardType) extends Cell {
   val isEmpty: Boolean = {
     cellType == PegCellType.Empty
   }
@@ -23,15 +23,7 @@ case class PegCell(id: String, x: Int, y: Int, cellType: PegCellType, boardType:
     }
   }
 
-  val neighbors: List[PegCell] = {
-    List.empty
-  }
-
-  def render(gc: GraphicsContext,
-             startX: Int,
-             startY: Int,
-             width: Int,
-             height: Int): Unit = {
+  def render(gc: GraphicsContext, startX: Int, startY: Int, width: Int, height: Int): Unit = {
     gc.setFill(color)
     gc.setStroke(Color.Black)
     gc.fillRect(startX, startY, width, height)

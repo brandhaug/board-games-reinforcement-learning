@@ -1,6 +1,6 @@
-package agent.enums
+package agent
 
 object AgentType extends Enumeration {
   type AgentType = Value
-  val TableLookup, NeuralNetwork = Value
+  val TableLookup, NeuralNetwork, Random = Value
 }

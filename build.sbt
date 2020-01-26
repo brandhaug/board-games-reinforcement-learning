@@ -2,10 +2,11 @@
 name := "rl-peg-solitaire"
 version := "0.1"
 
-scalaVersion := "2.13.1"
+scalaVersion := "2.12.10"
 
-scalacOptions ++= Seq("-unchecked", "-deprecation", "-Xcheckinit", "-encoding", "utf8", "-Ymacro-annotations")
+scalacOptions ++= Seq("-unchecked", "-deprecation", "-Xcheckinit", "-encoding", "utf8")
 
+addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
 resourceDirectory in Compile := (scalaSource in Compile).value
 libraryDependencies ++= Seq(
   "org.scalafx" %% "scalafx"             % "12.0.2-R18",
@@ -27,3 +28,6 @@ libraryDependencies ++= javafxModules.map(m => "org.openjfx" % s"javafx-$m" % "1
 fork := true
 
 shellPrompt := { _ => System.getProperty("user.name") + s":${name.value}> " }
+
+libraryDependencies += "org.platanios" %% "tensorflow" % "0.4.1" classifier f"linux-gpu-x86_64"
+libraryDependencies += "org.platanios" %% "tensorflow" % "0.4.1"
