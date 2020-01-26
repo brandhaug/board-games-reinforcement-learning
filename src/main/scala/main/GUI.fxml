@@ -22,5 +22,6 @@
         <Button fx:id="trainButton" onAction="#train" styleClass="button" text="Train"/>
         <Button fx:id="startButton" onAction="#toggleStart" styleClass="button"/>
         <Button fx:id="resetButton" onAction="#reset" styleClass="button" text="Reset"/>
+        <Button fx:id="hardResetButton" onAction="#hardReset" styleClass="button" text="Hard Reset"/>
     </VBox>
 </AnchorPane>

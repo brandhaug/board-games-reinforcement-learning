@@ -22,7 +22,7 @@ case class PegSolitaire(board: PegBoard) extends Environment {
         }
 
         if (board.boardType == BoardType.Diamond && y < line.length - 2 && x > 1 && board.grid(y + 1)(x - 1).isPeg && board.grid(y + 2)(x - 2).isPeg) {
-          possibleActions += PegAction(x, y + 2, ActionType.NorthEast)
+          possibleActions += PegAction(x - 2, y + 2, ActionType.NorthEast)
         }
 
         if (x > 1 && line(x - 1).isPeg && line(x - 2).isPeg) {
@@ -30,7 +30,7 @@ case class PegSolitaire(board: PegBoard) extends Environment {
         }
 
         if (board.boardType == BoardType.Triangular && y > 1 && x > 1 && board.grid(y - 1)(x - 1).isPeg && board.grid(y - 2)(x - 2).isPeg) {
-          possibleActions += PegAction(x, y - 2, ActionType.SouthEast)
+          possibleActions += PegAction(x - 2, y - 2, ActionType.SouthEast)
         }
 
         if (y > 1 && board.grid(y - 1)(x).isPeg && board.grid(y - 2)(x).isPeg) {
@@ -38,7 +38,7 @@ case class PegSolitaire(board: PegBoard) extends Environment {
         }
 
         if (board.boardType == BoardType.Diamond && y > 1 && x < line.length - 2 && board.grid(y - 1)(x + 1).isPeg && board.grid(y - 2)(x + 2).isPeg) {
-          possibleActions += PegAction(x, y - 2, ActionType.SouthWest)
+          possibleActions += PegAction(x + 2, y - 2, ActionType.SouthWest)
         }
 
         if (x < line.length - 2 && line(x + 1).isPeg && line(x + 2).isPeg) {
@@ -46,7 +46,7 @@ case class PegSolitaire(board: PegBoard) extends Environment {
         }
 
         if (board.boardType == BoardType.Triangular && y < line.length - 2 && x < line.length - 2 && board.grid(y + 1)(x + 1).isPeg && board.grid(y + 2)(x + 2).isPeg) {
-          possibleActions += PegAction(x, y + 2, ActionType.NorthWest)
+          possibleActions += PegAction(x + 2, y + 2, ActionType.NorthWest)
         }
       }
       possibleActions
@@ -82,43 +82,23 @@ case class PegSolitaire(board: PegBoard) extends Environment {
       (cell, x) <- line.zipWithIndex
     } yield {
       if (action.x == x && action.y == y) PegCell(x, y, PegCellType.Empty, board.boardType)
-
-      action.actionType match {
-        case ActionType.North =>
-          if (action.y - 2 == y && action.x == x) PegCell(x, y, PegCellType.Peg, board.boardType)
-          else if (action.y - 1 == y && action.x == x) PegCell(x, y, PegCellType.Empty, board.boardType)
-          else cell
-        case ActionType.NorthEast =>
-          if (action.y - 2 == y && action.x == x - 2) PegCell(x, y, PegCellType.Peg, board.boardType)
-          else if (action.y - 1 == y && action.x == x - 1) PegCell(x, y, PegCellType.Empty, board.boardType)
-          else cell
-        case ActionType.East =>
-          if (action.y == y && action.x + 2 == x) PegCell(x, y, PegCellType.Peg, board.boardType)
-          else if (action.y == y && action.x + 1 == x) PegCell(x, y, PegCellType.Empty, board.boardType)
-          else cell
-        case ActionType.SouthEast =>
-          if (action.y + 2 == y && action.x == x + 2) PegCell(x, y, PegCellType.Peg, board.boardType)
-          else if (action.y + 1 == y && action.x == x + 1) PegCell(x, y, PegCellType.Empty, board.boardType)
-          else cell
-        case ActionType.South =>
-          if (action.y + 2 == y && action.x == x) PegCell(x, y, PegCellType.Peg, board.boardType)
-          else if (action.y + 1 == y && action.x == x) PegCell(x, y, PegCellType.Empty, board.boardType)
-          else cell
-        case ActionType.SouthWest =>
-          if (action.y + 2 == y && action.x == x - 2) PegCell(x, y, PegCellType.Peg, board.boardType)
-          else if (action.y + 1 == y && action.x == x - 1) PegCell(x, y, PegCellType.Empty, board.boardType)
-          else cell
-        case ActionType.West =>
-          if (action.y == y && action.x - 2 == x) PegCell(x, y, PegCellType.Peg, board.boardType)
-          else if (action.y == y && action.x - 1 == x) PegCell(x, y, PegCellType.Empty, board.boardType)
-          else cell
-        case ActionType.NorthWest =>
-          if (action.y - 2 == y && action.x == x + 2) PegCell(x, y, PegCellType.Peg, board.boardType)
-          else if (action.y - 1 == y && action.x == x + 1) PegCell(x, y, PegCellType.Empty, board.boardType)
-          else cell
-        case _ =>
-          throw new Exception("Unknown ActionType")
-      }
+      else if (action.actionType == ActionType.North && action.y - 2 == y && action.x == x) PegCell(x, y, PegCellType.Peg, board.boardType)
+      else if (action.actionType == ActionType.North && action.y - 1 == y && action.x == x) PegCell(x, y, PegCellType.Empty, board.boardType)
+      else if (action.actionType == ActionType.NorthEast && action.y - 2 == y && action.x == x - 2) PegCell(x, y, PegCellType.Peg, board.boardType)
+      else if (action.actionType == ActionType.NorthEast && action.y - 1 == y && action.x == x - 1) PegCell(x, y, PegCellType.Empty, board.boardType)
+      else if (action.actionType == ActionType.East && action.y == y && action.x + 2 == x) PegCell(x, y, PegCellType.Peg, board.boardType)
+      else if (action.actionType == ActionType.East && action.y == y && action.x + 1 == x) PegCell(x, y, PegCellType.Empty, board.boardType)
+      else if (action.actionType == ActionType.SouthEast && action.y + 2 == y && action.x == x + 2) PegCell(x, y, PegCellType.Peg, board.boardType)
+      else if (action.actionType == ActionType.SouthEast && action.y + 1 == y && action.x == x + 1) PegCell(x, y, PegCellType.Empty, board.boardType)
+      else if (action.actionType == ActionType.South && action.y + 2 == y && action.x == x) PegCell(x, y, PegCellType.Peg, board.boardType)
+      else if (action.actionType == ActionType.South && action.y + 1 == y && action.x == x) PegCell(x, y, PegCellType.Empty, board.boardType)
+      else if (action.actionType == ActionType.SouthWest && action.y + 2 == y && action.x == x - 2) PegCell(x, y, PegCellType.Peg, board.boardType)
+      else if (action.actionType == ActionType.SouthWest && action.y + 1 == y && action.x == x - 1) PegCell(x, y, PegCellType.Empty, board.boardType)
+      else if (action.actionType == ActionType.West && action.y == y && action.x - 2 == x) PegCell(x, y, PegCellType.Peg, board.boardType)
+      else if (action.actionType == ActionType.West && action.y == y && action.x - 1 == x) PegCell(x, y, PegCellType.Empty, board.boardType)
+      else if (action.actionType == ActionType.NorthWest && action.y - 2 == y && action.x == x + 2) PegCell(x, y, PegCellType.Peg, board.boardType)
+      else if (action.actionType == ActionType.NorthWest && action.y - 1 == y && action.x == x + 1) PegCell(x, y, PegCellType.Empty, board.boardType)
+      else cell
     }
   }
 

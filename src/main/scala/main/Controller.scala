@@ -47,10 +47,14 @@ class Controller(val canvas: Canvas,
 
   initialize()
 
-  def initialize(): Unit = {
-    initialEnvironment = initializeEnvironment()
+  def initialize(hardReset: Boolean = true): Unit = {
+    if (hardReset) {
+      initialEnvironment = initializeEnvironment()
+      agent = initializeAgent(initialEnvironment)
+    }
+
     resetGui()
-    agent = initializeAgent(initialEnvironment)
+
     render(initialEnvironment)
 
     var environment = initialEnvironment
@@ -178,11 +182,11 @@ class Controller(val canvas: Canvas,
   }
 
   def selectAgentType(): Unit = {
-    reset()
+    hardReset()
   }
 
   def selectFile(): Unit = {
-    reset()
+    hardReset()
   }
 
   def toggleStart(): Unit = {
@@ -197,10 +201,16 @@ class Controller(val canvas: Canvas,
     }
   }
 
-  def reset(): Unit = {
+  def hardReset(): Unit = {
     paused = true
     timeline.stop()
     initialize()
+  }
+
+  def reset(): Unit = {
+    paused = true
+    timeline.stop()
+    initialize(hardReset = false)
   }
 
 }

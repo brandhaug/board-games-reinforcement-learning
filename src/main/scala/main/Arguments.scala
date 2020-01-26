@@ -17,7 +17,7 @@ object Arguments {
   val emptyHoles: Set[(Int, Int)] = Set()
 
   // Reinforcement Learning
-  val episodes: Int = 20000 // number of games we want the agent to play
+  val episodes: Int = 3000 // number of games we want the agent to play
 
   // Actor
   val actorEligibilityDecayRate = 0.0
