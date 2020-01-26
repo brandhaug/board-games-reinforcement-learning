@@ -5,7 +5,7 @@ import environment.ActionType.ActionType
 
 import scala.util.Random
 
-case class RandomAgent(initialEnvironment: Environment, actionTypes: List[ActionType]) extends Agent {
+case class RandomAgent(initialEnvironment: Environment) extends Agent {
   def act(environment: Environment): Action = {
     randomAction(environment)
   }

@@ -3,17 +3,15 @@ package main
 import java.io.File
 
 import agent.{Agent, AgentType, Memory, NetworkAgent, RandomAgent, TableAgent}
-import environment.{ActionType, Environment, EnvironmentType}
+import environment.{Environment, EnvironmentType}
 import agent.AgentType.AgentType
-import filereader.PegSolitaireFileReader
+import environment.pegsolitaire.PegSolitaireFileReader
 import scalafx.animation.{KeyFrame, Timeline}
 import scalafx.scene.canvas.{Canvas, GraphicsContext}
 import scalafx.scene.control.{Button, ComboBox, Label, RadioButton, ToggleGroup}
 import scalafx.scene.layout.VBox
 import scalafxml.core.macros.sfxml
 import scalafx.Includes._
-
-import scala.io.Source
 
 @sfxml
 class Controller(val canvas: Canvas,
@@ -27,24 +25,20 @@ class Controller(val canvas: Canvas,
                  val startButton: Button,
                  val resetButton: Button) {
   // Selected file
-  val files: List[File]        = listFiles(Arguments.mapsDirectoryName)
-  val fileNames: List[String]  = files.map(file => file.getName).sorted
-  var selectedFileName: String = initializeFileSelector(fileNames)
+  val files: List[File]       = listFiles(Arguments.mapsDirectoryName)
+  val fileNames: List[String] = files.map(file => file.getName).sorted
+  initializeFileSelector(fileNames)
 
   // Canvas
-  val gc: GraphicsContext      = canvas.graphicsContext2D
+  val gc: GraphicsContext = canvas.graphicsContext2D
 
-  // Algorithm radio buttons
-  val algorithmToggleGroup = new ToggleGroup()
-  tableLookupRadioButton.setToggleGroup(algorithmToggleGroup)
-  neuralNetworkRadioButton.setToggleGroup(algorithmToggleGroup)
-  randomRadioButton.setToggleGroup(algorithmToggleGroup)
-  tableLookupRadioButton.setSelected(true)
-  var selectedAgentType: AgentType = AgentType.TableLookup
+  // Agent toggle group
+  val agentToggleGroup = new ToggleGroup()
+  initializeAgentToggleGroup()
 
   // Global variables
-  var timeline: Timeline = _
-  var agent: Agent       = _
+  var timeline: Timeline              = _
+  var agent: Agent                    = _
   var initialEnvironment: Environment = _
 
   // States
@@ -53,7 +47,7 @@ class Controller(val canvas: Canvas,
   initialize()
 
   def initialize(): Unit = {
-    initializeGui()
+    resetGui()
 
     initialEnvironment = initializeEnvironment()
     agent = initializeAgent(initialEnvironment)
@@ -70,7 +64,7 @@ class Controller(val canvas: Canvas,
             if (environment.possibleActions.isEmpty && !paused) {
               toggleStart()
             } else {
-              val action             = agent.act(environment)
+              val action          = agent.act(environment)
               val nextEnvironment = environment.step(action)
               environment = nextEnvironment
               render(nextEnvironment)
@@ -90,7 +84,7 @@ class Controller(val canvas: Canvas,
     var memories    = List.empty[Memory]
 
     while (environment.possibleActions.nonEmpty) {
-      val action             = agent.act(environment)
+      val action          = agent.act(environment)
       val nextEnvironment = environment.step(action)
       val nextMemories    = memories :+ Memory(environment, action, nextEnvironment)
       environment = nextEnvironment
@@ -108,12 +102,15 @@ class Controller(val canvas: Canvas,
     environment.render(gc)
   }
 
-  def initializeGui(): Unit = {
+  def resetGui(): Unit = {
     startButton.setText("Start")
-    comboBox.setVisible(true)
   }
 
   def initializeEnvironment(): Environment = {
+    val selectedFileName: String = Option(comboBox.getValue) match {
+      case Some(value) => value
+      case None        => fileNames.head
+    }
     val selectedFile = files.find(file => file.getName == selectedFileName).get
 
     Arguments.environmentType match {
@@ -123,22 +120,26 @@ class Controller(val canvas: Canvas,
   }
 
   def initializeAgent(environment: Environment): Agent = {
-    val actionTypes = Arguments.environmentType match {
-      case EnvironmentType.PegSolitaire => List(ActionType.Left, ActionType.Right, ActionType.Up, ActionType.Down)
-    }
-
-    selectedAgentType match {
-      case AgentType.TableLookup   => TableAgent(environment, actionTypes)
-      case AgentType.NeuralNetwork => NetworkAgent(environment, actionTypes)
-      case AgentType.Random        => RandomAgent(environment, actionTypes)
+    selectedAgentType() match {
+      case AgentType.TableLookup   => TableAgent(environment)
+      case AgentType.NeuralNetwork => NetworkAgent(environment)
+      case AgentType.Random        => RandomAgent(environment)
+      case _ => throw new Exception("Unknown agent")
     }
   }
 
-  def initializeFileSelector(fileNames: List[String]): String = {
+  def initializeFileSelector(fileNames: List[String]): Unit = {
     fileNames.foreach(fileName => comboBox += fileName)
     val selectedFileName = fileNames.head
     comboBox.getSelectionModel.select(fileNames.indexOf(selectedFileName))
-    selectedFileName
+    comboBox.setVisible(true)
+  }
+
+  def initializeAgentToggleGroup(): Unit = {
+    tableLookupRadioButton.setToggleGroup(agentToggleGroup)
+    neuralNetworkRadioButton.setToggleGroup(agentToggleGroup)
+    randomRadioButton.setToggleGroup(agentToggleGroup)
+    tableLookupRadioButton.setSelected(true)
   }
 
   def listFiles(directoryName: String): List[File] = {
@@ -151,19 +152,18 @@ class Controller(val canvas: Canvas,
     }
   }
 
-  def selectAgentType(): Unit = {
-    selectedAgentType = {
-      if (tableLookupRadioButton.selected()) AgentType.TableLookup
-      else if (neuralNetworkRadioButton.selected()) AgentType.NeuralNetwork
-      else if (randomRadioButton.selected()) AgentType.Random
-      else throw new Error("Error in algorithm radio buttons")
-    }
+  def selectedAgentType(): AgentType = {
+    if (tableLookupRadioButton.selected()) AgentType.TableLookup
+    else if (neuralNetworkRadioButton.selected()) AgentType.NeuralNetwork
+    else if (randomRadioButton.selected()) AgentType.Random
+    else throw new Exception("No agent radio button selected")
+  }
 
+  def selectAgentType(): Unit = {
     reset()
   }
 
   def selectFile(): Unit = {
-    selectedFileName = comboBox.getValue.toString
     reset()
   }
 

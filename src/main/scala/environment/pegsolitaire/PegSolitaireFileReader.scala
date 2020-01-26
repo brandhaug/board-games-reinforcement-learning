@@ -1,13 +1,11 @@
-package filereader
+package environment.pegsolitaire
 
 import java.io.File
 
-import environment.Environment
-import environment.pegsolitaire.PegBoardType.PegBoardType
-import environment.pegsolitaire._
+import environment.BoardType.BoardType
+import environment.{BoardType, Environment}
 
 import scala.io.Source
-import scala.util.Random
 
 object PegSolitaireFileReader {
 
@@ -19,9 +17,10 @@ object PegSolitaireFileReader {
     val first :: rest = lines
 
     val boardType = first match {
-      case "square" => PegBoardType.Square
-      case "hex"    => PegBoardType.Hex
-      case _        => PegBoardType.Square
+      case "square" => BoardType.Square
+      case "triangular"    => BoardType.Triangular
+      case "diamond" => BoardType.Diamond
+      case _        => throw new Exception("Unknown board type")
     }
 
     val grid = for {
@@ -36,7 +35,7 @@ object PegSolitaireFileReader {
     PegSolitaire(pegBoard)
   }
 
-  def extractGridRowFromLine(lineList: List[String], y: Int, boardType: PegBoardType): List[PegCell] = {
+  def extractGridRowFromLine(lineList: List[String], y: Int, boardType: BoardType): List[PegCell] = {
     for {
       (cellString, x) <- lineList.zipWithIndex
     } yield {

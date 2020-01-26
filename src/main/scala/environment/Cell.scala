@@ -1,11 +1,13 @@
 package environment
 
+import environment.BoardType.BoardType
 import scalafx.scene.canvas.GraphicsContext
 import scalafx.scene.paint.Color
 
-abstract class Cell {
+trait Cell {
   val x: Int
   val y: Int
   val color: Color
+  val boardType: BoardType
   def render(gc: GraphicsContext, startX: Int, startY: Int, width: Int, height: Int): Unit
 }

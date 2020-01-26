@@ -1,21 +1,16 @@
 package agent
 
-import environment.ActionType.ActionType
 import environment.{Action, Environment}
 import main.Arguments._
 
 import scala.util.Random
 
-case class TableAgent(initialEnvironment: Environment,
-                      actionTypes: List[ActionType],
-                      table: Map[String, List[ActionReward]] = Map[String, List[ActionReward]](),
-                      epsilonRate: Double = actorEpsilonRate)
-    extends Agent {
+case class TableAgent(initialEnvironment: Environment, table: Map[String, List[ActionReward]] = Map(), epsilonRate: Double = actorEpsilonRate) extends Agent {
   println(f"Table size: ${table.size}")
   println(f"Epsilon rate: $epsilonRate")
 
   def act(environment: Environment): Action = {
-    val actionRewardList = table.getOrElse(environment.toString(), List.empty)
+    val actionRewardList = table.getOrElse(environment.toString, List.empty)
 
     if (actionRewardList.isEmpty || Random.nextDouble() <= epsilonRate) {
       randomAction(environment)
@@ -33,13 +28,13 @@ case class TableAgent(initialEnvironment: Environment,
       memory <- memories
 
       // Current reward
-      tableKey         = memory.environment.toString()
+      tableKey         = memory.environment.toString
       oldActionRewards = table.getOrElse(tableKey, initializeActionRewardList(memory))
       oldActionReward <- oldActionRewards.filter(_.action.equals(memory.action))
       oldReward = oldActionReward.reward
 
       // Next environment
-      nextTableKey        = memory.nextEnvironment.toString()
+      nextTableKey        = memory.nextEnvironment.toString
       nextActionRewards   = table.getOrElse(nextTableKey, initializeActionRewardList(memory))
       maxNextActionReward = nextActionRewards.maxBy(_.reward)
 
@@ -48,13 +43,13 @@ case class TableAgent(initialEnvironment: Environment,
       newActionReward  = ActionReward(oldActionReward.action, newReward)
       newActionRewards = oldActionRewards.filterNot(_.action.equals(memory.action)) :+ newActionReward
     } yield {
-      (tableKey -> newActionRewards)
+      tableKey -> newActionRewards
     }
 
     val newTable = table ++ newKeyValuePairs
 
     val newEpsilonRate = epsilonRate * actorEpsilonDecayRate
-    TableAgent(initialEnvironment, actionTypes, newTable, epsilonRate = if (newEpsilonRate >= actorEpsilonMinRate) newEpsilonRate else actorEpsilonMinRate)
+    TableAgent(initialEnvironment, newTable, epsilonRate = if (newEpsilonRate >= actorEpsilonMinRate) newEpsilonRate else actorEpsilonMinRate)
   }
 
   def initializeActionRewardList(memory: Memory): List[ActionReward] = {
