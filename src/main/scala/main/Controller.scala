@@ -5,37 +5,48 @@ import java.io.File
 import agent.{Agent, AgentType, Memory, NetworkAgent, RandomAgent, TableAgent}
 import environment.{BoardType, Environment, EnvironmentType}
 import agent.AgentType.AgentType
+import environment.BoardType.BoardType
 import environment.pegsolitaire.PegSolitaireFileReader
 import scalafx.animation.{KeyFrame, Timeline}
 import scalafx.scene.canvas.{Canvas, GraphicsContext}
-import scalafx.scene.control.{Button, ComboBox, Label, RadioButton, ToggleGroup}
-import scalafx.scene.layout.VBox
+import scalafx.scene.control.{Button, ComboBox, Label, RadioButton, TextField, ToggleGroup}
 import scalafxml.core.macros.sfxml
 import scalafx.Includes._
 import scalafx.scene.paint.Color
+import utils.StringUtils
 
 @sfxml
-class Controller(val canvas: Canvas,
-                 val vBoxMenu: VBox,
-                 val tableLookupRadioButton: RadioButton,
-                 val neuralNetworkRadioButton: RadioButton,
-                 val randomRadioButton: RadioButton,
-                 val infoLabel: Label,
-                 val comboBox: ComboBox[String],
-                 val trainButton: Button,
-                 val startButton: Button,
-                 val resetButton: Button) {
+class Controller(canvas: Canvas,
+                 fileEnvironmentRadioButton: RadioButton,
+                 customEnvironmentRadioButton: RadioButton,
+                 fileComboBox: ComboBox[String],
+                 customBoardTypeComboBox: ComboBox[BoardType],
+                 customBoardSizeInput: TextField,
+                 createCustomEnvironmentButton: Button,
+                 tableLookupRadioButton: RadioButton,
+                 neuralNetworkRadioButton: RadioButton,
+                 randomRadioButton: RadioButton,
+                 infoLabel: Label,
+                 startButton: Button) {
   // Selected file
   val files: List[File]       = listFiles(Arguments.mapsDirectoryName)
   val fileNames: List[String] = files.map(file => file.getName).sorted
-  initializeFileSelector(fileNames)
+
+  // Environment toggle group
+  val agentToggleGroup = new ToggleGroup()
+  initializeAgentToggleGroup()
+
+  // Agent toggle group
+  val environmentToggleGroup = new ToggleGroup()
+  initializeEnvironmentToggleGroup()
+
+  // Combo boxes
+  initializeFileComboBox(fileNames)
+  initializeCustomBoardTypeComboBox()
+  selectEnvironmentSource()
 
   // Canvas
   val gc: GraphicsContext = canvas.graphicsContext2D
-
-  // Agent toggle group
-  val agentToggleGroup = new ToggleGroup()
-  initializeAgentToggleGroup()
 
   // Global variables
   var timeline: Timeline              = _
@@ -95,10 +106,14 @@ class Controller(val canvas: Canvas,
       memories = nextMemories
     }
 
-    println(f"Final reward: ${memories.last.environment.reward}")
+    if (memories.isEmpty) {
+      println(f"No possible actions")
+    } else {
+      println(f"Final reward: ${memories.last.environment.reward}")
 
-    agent = agent.train(memories)
-    if (episode != Arguments.episodes) train(episode + 1)
+      agent = agent.train(memories)
+      if (episode != Arguments.episodes) train(episode + 1)
+    }
   }
 
   def render(environment: Environment): Unit = {
@@ -106,7 +121,6 @@ class Controller(val canvas: Canvas,
     gc.clearRect(0, 0, canvas.getWidth, canvas.getHeight)
     gc.fillRect(0, 0, canvas.getWidth, canvas.getHeight)
     environment.render(gc)
-
   }
 
   def resetGui(): Unit = {
@@ -121,7 +135,7 @@ class Controller(val canvas: Canvas,
         canvas.setRotate(45)
         canvas.setScaleX(0.7)
         canvas.setScaleY(0.7)
-      case _                 =>
+      case _ =>
         canvas.setRotate(0)
         canvas.setScaleX(1)
         canvas.setScaleY(1)
@@ -129,16 +143,36 @@ class Controller(val canvas: Canvas,
   }
 
   def initializeEnvironment(): Environment = {
-    val selectedFileName: String = Option(comboBox.getValue) match {
+    if (customEnvironmentRadioButton.selected()) {
+      initializeCustomEnvironment()
+    } else {
+      initializeEnvironmentFromFile()
+    }
+  }
+
+  def initializeEnvironmentFromFile(): Environment = {
+    val selectedFileName: String = Option(fileComboBox.getValue) match {
       case Some(value) => value
       case None        => fileNames.head
     }
     val selectedFile = files.find(file => file.getName == selectedFileName).get
 
     Arguments.environmentType match {
-      case EnvironmentType.PegSolitaire =>
-        PegSolitaireFileReader.readFile(selectedFile)
+      case EnvironmentType.PegSolitaire => PegSolitaireFileReader.createEnvironmentFromFile(selectedFile)
+      case _                            => throw new Exception("Unknown EnvironmentType")
     }
+  }
+
+  def initializeCustomEnvironment(): Environment = {
+    val inputValue       = customBoardSizeInput.getText
+    val defaultBoardSize = 5
+    val boardType = customBoardTypeComboBox.getValue
+    val boardSize = if (StringUtils.isNumeric(inputValue)) inputValue.toInt else defaultBoardSize
+    Arguments.environmentType match {
+      case EnvironmentType.PegSolitaire =>     PegSolitaireFileReader.createEnvironment(boardType, boardSize)
+      case _                            => throw new Exception("Unknown EnvironmentType")
+    }
+
   }
 
   def initializeAgent(environment: Environment): Agent = {
@@ -150,11 +184,20 @@ class Controller(val canvas: Canvas,
     }
   }
 
-  def initializeFileSelector(fileNames: List[String]): Unit = {
-    fileNames.foreach(fileName => comboBox += fileName)
+  def initializeFileComboBox(fileNames: List[String]): Unit = {
+    fileNames.foreach(fileName => fileComboBox += fileName)
     val selectedFileName = fileNames.head
-    comboBox.getSelectionModel.select(fileNames.indexOf(selectedFileName))
-    comboBox.setVisible(true)
+    fileComboBox.getSelectionModel.select(fileNames.indexOf(selectedFileName))
+  }
+
+  def initializeCustomBoardTypeComboBox(): Unit = {
+    BoardType.values.foreach(boardType => customBoardTypeComboBox += boardType)
+    val selectedBoardType = BoardType.Square
+    customBoardTypeComboBox.getSelectionModel.select(BoardType.values.toList.indexOf(selectedBoardType))
+  }
+
+  def createCustomEnvironment(): Unit = {
+    hardReset()
   }
 
   def initializeAgentToggleGroup(): Unit = {
@@ -162,6 +205,12 @@ class Controller(val canvas: Canvas,
     neuralNetworkRadioButton.setToggleGroup(agentToggleGroup)
     randomRadioButton.setToggleGroup(agentToggleGroup)
     tableLookupRadioButton.setSelected(true)
+  }
+
+  def initializeEnvironmentToggleGroup(): Unit = {
+    fileEnvironmentRadioButton.setToggleGroup(environmentToggleGroup)
+    customEnvironmentRadioButton.setToggleGroup(environmentToggleGroup)
+    fileEnvironmentRadioButton.setSelected(true)
   }
 
   def listFiles(directoryName: String): List[File] = {
@@ -211,6 +260,20 @@ class Controller(val canvas: Canvas,
     paused = true
     timeline.stop()
     initialize(hardReset = false)
+  }
+
+  def selectEnvironmentSource(): Unit = {
+    if (fileEnvironmentRadioButton.selected()) {
+      fileComboBox.setVisible(true)
+      customBoardTypeComboBox.setVisible(false)
+      customBoardSizeInput.setVisible(false)
+      createCustomEnvironmentButton.setVisible(false)
+    } else if (customEnvironmentRadioButton.selected()) {
+      fileComboBox.setVisible(false)
+      customBoardTypeComboBox.setVisible(true)
+      customBoardSizeInput.setVisible(true)
+      createCustomEnvironmentButton.setVisible(true)
+    }
   }
 
 }

@@ -8,7 +8,7 @@
 }
 
 .button {
-  -fx-pref-width: 140;
+  -fx-pref-width: 150;
   -fx-font-family: "Open Sans";
   -fx-font-weight: bold;
   -fx-background-color: #eaeef1;
@@ -27,7 +27,11 @@
 }
 
 .combo-box {
-  -fx-padding: .35em 1em;
+  -fx-padding: .35em .3em;
+  -fx-max-width: 150;
+  -fx-font-family: "Open Sans";
+  -fx-font-size: 12px;
+
 }
 
 .h-box {
@@ -35,4 +39,18 @@
 
 .canvas-pane {
   -fx-background-color: black;
+}
+
+.title-label {
+  -fx-font-weight: bold;
+}
+
+.text-field {
+  -fx-max-width: 150;
+  -fx-font-family: "Open Sans";
+  -fx-background-color: white;
+  -fx-padding: 0.5em 1em;
+  -fx-border-color: #999999;
+  -fx-text-fill: #222222;
+  -fx-border-radius: 3px;
 }

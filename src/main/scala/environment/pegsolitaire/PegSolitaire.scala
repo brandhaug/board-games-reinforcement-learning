@@ -12,20 +12,20 @@ case class PegSolitaire(board: PegBoard) extends Environment {
   val reward: Double = Math.pow(board.grid.flatten.length - pegsLeft, 2)
   val possibleActions: List[Action] = {
     (for {
-      (line, y) <- board.grid.zipWithIndex
-      (cell, x) <- line.zipWithIndex
+      (row, y) <- board.grid.zipWithIndex
+      (cell, x) <- row.zipWithIndex
     } yield {
       val possibleActions = mutable.Set[PegAction]()
       if (cell.isEmpty) {
-        if (y < line.length - 2 && board.grid(y + 1)(x).isPeg && board.grid(y + 2)(x).isPeg) {
+        if (y < row.length - 2 && board.grid(y + 1)(x).isPeg && board.grid(y + 2)(x).isPeg) {
           possibleActions += PegAction(x, y + 2, ActionType.North)
         }
 
-        if (board.boardType == BoardType.Diamond && y < line.length - 2 && x > 1 && board.grid(y + 1)(x - 1).isPeg && board.grid(y + 2)(x - 2).isPeg) {
+        if (board.boardType == BoardType.Diamond && y < row.length - 2 && x > 1 && board.grid(y + 1)(x - 1).isPeg && board.grid(y + 2)(x - 2).isPeg) {
           possibleActions += PegAction(x - 2, y + 2, ActionType.NorthEast)
         }
 
-        if (x > 1 && line(x - 1).isPeg && line(x - 2).isPeg) {
+        if (x > 1 && row(x - 1).isPeg && row(x - 2).isPeg) {
           possibleActions += PegAction(x - 2, y, ActionType.East)
         }
 
@@ -37,15 +37,15 @@ case class PegSolitaire(board: PegBoard) extends Environment {
           possibleActions += PegAction(x, y - 2, ActionType.South)
         }
 
-        if (board.boardType == BoardType.Diamond && y > 1 && x < line.length - 2 && board.grid(y - 1)(x + 1).isPeg && board.grid(y - 2)(x + 2).isPeg) {
+        if (board.boardType == BoardType.Diamond && y > 1 && x < row.length - 2 && board.grid(y - 1)(x + 1).isPeg && board.grid(y - 2)(x + 2).isPeg) {
           possibleActions += PegAction(x + 2, y - 2, ActionType.SouthWest)
         }
 
-        if (x < line.length - 2 && line(x + 1).isPeg && line(x + 2).isPeg) {
+        if (x < row.length - 2 && row(x + 1).isPeg && row(x + 2).isPeg) {
           possibleActions += PegAction(x + 2, y, ActionType.West)
         }
 
-        if (board.boardType == BoardType.Triangular && y < line.length - 2 && x < line.length - 2 && board.grid(y + 1)(x + 1).isPeg && board.grid(y + 2)(x + 2).isPeg) {
+        if (board.boardType == BoardType.Triangular && y < row.length - 2 && x < row.length - 2 && board.grid(y + 1)(x + 1).isPeg && board.grid(y + 2)(x + 2).isPeg) {
           possibleActions += PegAction(x + 2, y + 2, ActionType.NorthWest)
         }
       }
@@ -77,9 +77,9 @@ case class PegSolitaire(board: PegBoard) extends Environment {
     PegSolitaire(newBoard)
   }
 
-  def updateGridRow(line: List[PegCell], y: Int, action: Action): List[PegCell] = {
+  def updateGridRow(row: List[PegCell], y: Int, action: Action): List[PegCell] = {
     for {
-      (cell, x) <- line.zipWithIndex
+      (cell, x) <- row.zipWithIndex
     } yield {
       if (action.x == x && action.y == y) PegCell(x, y, PegCellType.Empty, board.boardType)
       else if (action.actionType == ActionType.North && action.y - 2 == y && action.x == x) PegCell(x, y, PegCellType.Peg, board.boardType)

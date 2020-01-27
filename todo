@@ -1,5 +1,5 @@
-generate boards
+toggle cells
+pegs left over x episodes chart
 critic agent
-render hex boards
 end in same as initial empty hole (?)
 tests
