@@ -12,6 +12,7 @@ import scalafx.scene.canvas.{Canvas, GraphicsContext}
 import scalafx.scene.control.{Button, ComboBox, Label, RadioButton, TextField, ToggleGroup}
 import scalafxml.core.macros.sfxml
 import scalafx.Includes._
+import scalafx.scene.input.MouseEvent
 import scalafx.scene.paint.Color
 import utils.StringUtils
 
@@ -166,10 +167,10 @@ class Controller(canvas: Canvas,
   def initializeCustomEnvironment(): Environment = {
     val inputValue       = customBoardSizeInput.getText
     val defaultBoardSize = 5
-    val boardType = customBoardTypeComboBox.getValue
-    val boardSize = if (StringUtils.isNumeric(inputValue)) inputValue.toInt else defaultBoardSize
+    val boardType        = customBoardTypeComboBox.getValue
+    val boardSize        = if (StringUtils.isNumeric(inputValue)) inputValue.toInt else defaultBoardSize
     Arguments.environmentType match {
-      case EnvironmentType.PegSolitaire =>     PegSolitaireFileReader.createEnvironment(boardType, boardSize)
+      case EnvironmentType.PegSolitaire => PegSolitaireFileReader.createEnvironment(boardType, boardSize)
       case _                            => throw new Exception("Unknown EnvironmentType")
     }
 
@@ -276,6 +277,12 @@ class Controller(canvas: Canvas,
     }
   }
 
+  def handleMouseClicked(mouseEvent: MouseEvent): Unit = {
+    if (paused) {
+      initialEnvironment = initialEnvironment.toggleCell(Math.round(mouseEvent.getX).toInt, Math.round(mouseEvent.getY).toInt)
+      reset()
+    }
+  }
 }
 
 object Canvas {

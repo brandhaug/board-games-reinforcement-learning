@@ -21,4 +21,5 @@ trait Environment {
 
     if (nextRewards.nonEmpty) nextRewards.max else 0.0
   }
+  def toggleCell(x: Int, y: Int): Environment
 }

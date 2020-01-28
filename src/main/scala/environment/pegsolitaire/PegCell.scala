@@ -6,7 +6,7 @@ import environment.pegsolitaire.PegCellType.PegCellType
 import scalafx.scene.canvas.GraphicsContext
 import scalafx.scene.paint.Color
 
-case class PegCell(x: Int, y: Int, cellType: PegCellType, boardType: BoardType) extends Cell {
+case class PegCell(xIndex: Int, yIndex: Int, cellType: PegCellType, boardType: BoardType) extends Cell {
   val isEmpty: Boolean = cellType == PegCellType.Empty
   val isNone: Boolean = cellType == PegCellType.None
   val isPeg: Boolean = cellType == PegCellType.Peg

@@ -6,7 +6,7 @@
 
 <AnchorPane prefHeight="800.0" prefWidth="1000.0" styleClass="anchor-pane" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.Controller">
     <Pane prefHeight="800.0" prefWidth="800.0" styleClass="canvas-pane">
-        <Canvas fx:id="canvas" height="800.0" width="800.0" />
+        <Canvas fx:id="canvas" height="800.0" width="800.0" onMouseClicked="#handleMouseClicked" />
     </Pane>
     <VBox fx:id="vBoxMenu" alignment="CENTER" layoutX="800.0" prefHeight="800.0" prefWidth="200.0" styleClass="v-box">
         <Label styleClass="title-label" text="Environment" textAlignment="CENTER" />

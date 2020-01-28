@@ -12,7 +12,7 @@ case class PegSolitaire(board: PegBoard) extends Environment {
   val reward: Double = Math.pow(board.grid.flatten.length - pegsLeft, 2)
   val possibleActions: List[Action] = {
     (for {
-      (row, y) <- board.grid.zipWithIndex
+      (row, y)  <- board.grid.zipWithIndex
       (cell, x) <- row.zipWithIndex
     } yield {
       val possibleActions = mutable.Set[PegAction]()
@@ -68,7 +68,7 @@ case class PegSolitaire(board: PegBoard) extends Environment {
   def step(action: Action): Environment = {
     val newGrid = for {
       (gridRow, y) <- board.grid.zipWithIndex
-      newGridRow = updateGridRow(gridRow, y, action)
+      newGridRow = updateGridRowByAction(gridRow, y, action)
     } yield {
       newGridRow
     }
@@ -77,7 +77,7 @@ case class PegSolitaire(board: PegBoard) extends Environment {
     PegSolitaire(newBoard)
   }
 
-  def updateGridRow(row: List[PegCell], y: Int, action: Action): List[PegCell] = {
+  def updateGridRowByAction(row: List[PegCell], y: Int, action: Action): List[PegCell] = {
     for {
       (cell, x) <- row.zipWithIndex
     } yield {
@@ -104,6 +104,36 @@ case class PegSolitaire(board: PegBoard) extends Environment {
 
   def render(gc: GraphicsContext): Unit = {
     board.render(gc)
+  }
+
+  def toggleCell(x: Int, y: Int): Environment = {
+    val newGrid = for {
+      (gridRow, yIndex) <- board.grid.zipWithIndex
+      newGridRow = updateGridRowByToggle(x, y, gridRow, yIndex)
+    } yield {
+      newGridRow
+    }
+
+    val newBoard = PegBoard(newGrid, board.boardType)
+    PegSolitaire(newBoard)
+  }
+
+  def updateGridRowByToggle(x: Int, y: Int, row: List[PegCell], yIndex: Int): List[PegCell] = {
+    for {
+      (cell, xIndex) <- row.zipWithIndex
+      cellStartX = board.cellStartX(row, xIndex)
+      cellStartY = yIndex * board.cellHeight
+    } yield {
+      if (x > cellStartX && x < cellStartX + board.cellWidth && y > cellStartY && y < cellStartY + board.cellHeight) {
+        cell.cellType match {
+          case PegCellType.Peg   => PegCell(cell.xIndex, cell.yIndex, PegCellType.Empty, cell.boardType)
+          case PegCellType.Empty => PegCell(cell.xIndex, cell.yIndex, PegCellType.None, cell.boardType)
+          case PegCellType.None  => PegCell(cell.xIndex, cell.yIndex, PegCellType.Peg, cell.boardType)
+        }
+      } else {
+        cell
+      }
+    }
   }
 
   override def toString: String = board.grid.flatten.map(_.cellType.id).mkString("")

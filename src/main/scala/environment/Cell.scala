@@ -5,8 +5,8 @@ import scalafx.scene.canvas.GraphicsContext
 import scalafx.scene.paint.Color
 
 trait Cell {
-  val x: Int
-  val y: Int
+  val xIndex: Int
+  val yIndex: Int
   val color: Color
   val strokeColor: Color
   val boardType: BoardType
