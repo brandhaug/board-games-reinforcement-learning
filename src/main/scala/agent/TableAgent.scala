@@ -48,11 +48,15 @@ case class TableAgent(initialEnvironment: Environment, table: Map[String, List[A
 
     val newTable = table ++ newKeyValuePairs
 
-    val newEpsilonRate = epsilonRate * actorEpsilonDecayRate
-    TableAgent(initialEnvironment, newTable, epsilonRate = if (newEpsilonRate >= actorEpsilonMinRate) newEpsilonRate else actorEpsilonMinRate)
+    TableAgent(initialEnvironment, newTable, epsilonRate = epsilonRate)
   }
 
   def initializeActionRewardList(memory: Memory): List[ActionReward] = {
     memory.environment.possibleActions.map(action => ActionReward(action, 0))
+  }
+
+  def updateRates(): Agent = {
+    val newEpsilonRate = epsilonRate * actorEpsilonDecayRate
+    TableAgent(initialEnvironment, table, epsilonRate = if (newEpsilonRate >= actorEpsilonMinRate) newEpsilonRate else actorEpsilonMinRate)
   }
 }

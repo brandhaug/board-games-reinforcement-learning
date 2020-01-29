@@ -11,4 +11,8 @@ case class NetworkAgent(initialEnvironment: Environment) extends Agent {
   def train(memories: List[Memory]): Agent = {
     ???
   }
+
+  def updateRates(): Agent = {
+    ???
+  }
 }

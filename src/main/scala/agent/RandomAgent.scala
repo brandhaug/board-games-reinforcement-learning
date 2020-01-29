@@ -13,4 +13,8 @@ case class RandomAgent(initialEnvironment: Environment) extends Agent {
   def train(memories: List[Memory]): Agent = {
     this
   }
+
+  def updateRates(): Agent = {
+    this
+  }
 }

@@ -71,6 +71,7 @@ class Controller(pane: Pane,
     if (hardReset) {
       initialEnvironment = initializeEnvironment()
       agent = initializeAgent(initialEnvironment)
+      showChartButton.setVisible(false)
     }
 
     resetGui()
@@ -109,6 +110,7 @@ class Controller(pane: Pane,
         println(f"No possible actions")
         0
       } else {
+        agent = agent.updateRates()
         memories.last.environment.pegsLeft
       }
     }).toList

@@ -15,4 +15,5 @@ abstract class Agent {
     val actionIndex = Random.nextInt(environment.possibleActions.length)
     environment.possibleActions(actionIndex)
   }
+  def updateRates(): Agent
 }
