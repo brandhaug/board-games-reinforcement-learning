@@ -91,29 +91,28 @@ class Controller(canvas: Canvas,
   }
 
   def train(): Unit = {
-    train(1)
+    val environment = initialEnvironment
+    for {
+      episode <- 1 to Arguments.episodes
+      memories = playEpisode(environment)
+    } yield {
+      if (memories.isEmpty) {
+        println(f"No possible actions")
+      } else {
+        println(f"Training: $episode / ${Arguments.episodes}, Reward: ${memories.last.environment.reward}")
+        agent = agent.train(memories)
+      }
+    }
   }
 
-  def train(episode: Int): Unit = {
-    println(f"Training: $episode / ${Arguments.episodes}")
-    var environment = initialEnvironment
-    var memories    = List.empty[Memory]
-
-    while (environment.possibleActions.nonEmpty) {
+  def playEpisode(environment: Environment, memories: List[Memory] = List.empty): List[Memory] = {
+    if (environment.possibleActions.isEmpty) {
+      memories
+    } else {
       val action          = agent.act(environment)
       val nextEnvironment = environment.step(action)
       val nextMemories    = memories :+ Memory(environment, action, nextEnvironment)
-      environment = nextEnvironment
-      memories = nextMemories
-    }
-
-    if (memories.isEmpty) {
-      println(f"No possible actions")
-    } else {
-      println(f"Final reward: ${memories.last.environment.reward}")
-
-      agent = agent.train(memories)
-      if (episode != Arguments.episodes) train(episode + 1)
+      playEpisode(nextEnvironment, nextMemories)
     }
   }
 
