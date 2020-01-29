@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 
 <AnchorPane prefHeight="800.0" prefWidth="1000.0" styleClass="anchor-pane" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.Controller">
-    <Pane prefHeight="800.0" prefWidth="800.0" styleClass="canvas-pane">
+    <Pane fx:id="pane" prefHeight="800.0" prefWidth="800.0" styleClass="canvas-pane">
         <Canvas fx:id="canvas" height="800.0" width="800.0" onMouseClicked="#handleMouseClicked" />
     </Pane>
     <VBox fx:id="vBoxMenu" alignment="CENTER" layoutX="800.0" prefHeight="800.0" prefWidth="200.0" styleClass="v-box">
@@ -25,5 +25,6 @@
         <Button fx:id="startButton" onAction="#toggleStart" styleClass="button" />
         <Button fx:id="resetButton" onAction="#reset" styleClass="button" text="Reset" />
         <Button fx:id="hardResetButton" onAction="#hardReset" styleClass="button" text="Hard Reset" />
+        <Button fx:id="showChartButton" onAction="#toggleChart" styleClass="button" text="Show chart" />
     </VBox>
 </AnchorPane>

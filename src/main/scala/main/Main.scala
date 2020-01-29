@@ -22,5 +22,6 @@ object Main extends JFXApp {
   stage = new PrimaryStage() {
     title = "RL - Peg Solitaire"
     scene = new Scene(root)
+    resizable = false
   }
 }

@@ -1,5 +1,4 @@
-toggle cells
-pegs left over x episodes chart
 critic agent
 end in same as initial empty hole (?)
 tests
+update epsilon at end of episode?

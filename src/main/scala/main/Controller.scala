@@ -12,12 +12,16 @@ import scalafx.scene.canvas.{Canvas, GraphicsContext}
 import scalafx.scene.control.{Button, ComboBox, Label, RadioButton, TextField, ToggleGroup}
 import scalafxml.core.macros.sfxml
 import scalafx.Includes._
+import scalafx.collections.ObservableBuffer
+import scalafx.scene.chart.{LineChart, NumberAxis, XYChart}
 import scalafx.scene.input.MouseEvent
+import scalafx.scene.layout.Pane
 import scalafx.scene.paint.Color
 import utils.StringUtils
 
 @sfxml
-class Controller(canvas: Canvas,
+class Controller(pane: Pane,
+                 canvas: Canvas,
                  fileEnvironmentRadioButton: RadioButton,
                  customEnvironmentRadioButton: RadioButton,
                  fileComboBox: ComboBox[String],
@@ -28,7 +32,11 @@ class Controller(canvas: Canvas,
                  neuralNetworkRadioButton: RadioButton,
                  randomRadioButton: RadioButton,
                  infoLabel: Label,
-                 startButton: Button) {
+                 trainButton: Button,
+                 startButton: Button,
+                 resetButton: Button,
+                 hardResetButton: Button,
+                 showChartButton: Button) {
   // Selected file
   val files: List[File]       = listFiles(Arguments.mapsDirectoryName)
   val fileNames: List[String] = files.map(file => file.getName).sorted
@@ -46,13 +54,13 @@ class Controller(canvas: Canvas,
   initializeCustomBoardTypeComboBox()
   selectEnvironmentSource()
 
-  // Canvas
   val gc: GraphicsContext = canvas.graphicsContext2D
 
   // Global variables
   var timeline: Timeline              = _
   var agent: Agent                    = _
   var initialEnvironment: Environment = _
+  var pegsLeftHistory: List[Int]      = _
 
   // States
   var paused = true
@@ -92,17 +100,19 @@ class Controller(canvas: Canvas,
 
   def train(): Unit = {
     val environment = initialEnvironment
-    for {
+    pegsLeftHistory = (for {
       episode <- 1 to Arguments.episodes
       memories = playEpisode(environment)
+      _        = println(f"Training: $episode / ${Arguments.episodes}, Reward: ${memories.last.environment.reward}")
     } yield {
       if (memories.isEmpty) {
         println(f"No possible actions")
+        0
       } else {
-        println(f"Training: $episode / ${Arguments.episodes}, Reward: ${memories.last.environment.reward}")
-        agent = agent.train(memories)
+        memories.last.environment.pegsLeft
       }
-    }
+    }).toList
+    showChartButton.setVisible(true)
   }
 
   def playEpisode(environment: Environment, memories: List[Memory] = List.empty): List[Memory] = {
@@ -111,7 +121,9 @@ class Controller(canvas: Canvas,
     } else {
       val action          = agent.act(environment)
       val nextEnvironment = environment.step(action)
-      val nextMemories    = memories :+ Memory(environment, action, nextEnvironment)
+      val memory          = Memory(environment, action, nextEnvironment)
+      agent = agent.train(memory)
+      val nextMemories = memories :+ memory
       playEpisode(nextEnvironment, nextMemories)
     }
   }
@@ -129,7 +141,6 @@ class Controller(canvas: Canvas,
   }
 
   def resetCanvas(): Unit = {
-    gc.clearRect(0, 0, canvas.getWidth, canvas.getHeight)
     initialEnvironment.board.boardType match {
       case BoardType.Diamond =>
         canvas.setRotate(45)
@@ -282,9 +293,55 @@ class Controller(canvas: Canvas,
       reset()
     }
   }
+
+  def toggleChart(): Unit = {
+    if (showChartButton.getText == "Show chart") {
+      canvas.setVisible(false)
+      initializeChart()
+    } else {
+      removeChartFromPane()
+      initialize(hardReset = false)
+    }
+  }
+
+  def removeChartFromPane(): Unit = {
+    pane.children.remove(1, 2)
+    trainButton.setVisible(true)
+    startButton.setVisible(true)
+    resetButton.setVisible(true)
+    hardResetButton.setVisible(true)
+    canvas.setVisible(true)
+    showChartButton.setText("Show chart")
+  }
+
+  def initializeChart(): Unit = {
+    trainButton.setVisible(false)
+    startButton.setVisible(false)
+    resetButton.setVisible(false)
+    hardResetButton.setVisible(false)
+    val xAxis = new NumberAxis()
+    xAxis.label = "Episode"
+    val yAxis     = new NumberAxis()
+    val lineChart = LineChart(xAxis, yAxis)
+    lineChart.title = "Pegs left"
+    lineChart.setPrefHeight(Pane.height)
+    lineChart.setPrefWidth(Pane.width)
+
+    val data = ObservableBuffer(pegsLeftHistory.zipWithIndex map {
+      case (pegsLeft, episode) => XYChart.Data[Number, Number](episode, pegsLeft)
+    })
+
+    val series = XYChart.Series[Number, Number]("Pegs left", data)
+    lineChart.getData.add(series)
+    lineChart.setLegendVisible(false);
+    lineChart.setCreateSymbols(false)
+
+    pane.children.add(lineChart)
+    showChartButton.setText("Close chart")
+  }
 }
 
-object Canvas {
+object Pane {
   val width  = 800
   val height = 800
 }

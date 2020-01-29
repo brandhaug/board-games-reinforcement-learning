@@ -9,7 +9,7 @@ import scala.collection.mutable
 
 case class PegSolitaire(board: PegBoard) extends Environment {
   val pegsLeft: Int  = ListUtils.sumList(board.grid.map(_.count(_.isPeg)))
-  val reward: Double = Math.pow(board.grid.flatten.length - pegsLeft, 2)
+  val reward: Double = Math.pow(board.grid.flatten.length - pegsLeft, 2) // if (pegsLeft == 1) 1 else 0
   val possibleActions: List[Action] = {
     (for {
       (row, y)  <- board.grid.zipWithIndex

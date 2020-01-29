@@ -6,7 +6,7 @@ import main.Arguments._
 import scala.util.Random
 
 case class TableAgent(initialEnvironment: Environment, table: Map[String, List[ActionReward]] = Map(), epsilonRate: Double = actorEpsilonRate) extends Agent {
-  println(f"Table size: ${table.size}")
+//  println(f"Table size: ${table.size}")
 //  println(f"Epsilon rate: $epsilonRate")
 
   def act(environment: Environment): Action = {

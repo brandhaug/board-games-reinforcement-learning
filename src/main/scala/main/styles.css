@@ -54,3 +54,43 @@
   -fx-text-fill: #222222;
   -fx-border-radius: 3px;
 }
+
+.chart {
+  -fx-padding: 10px;
+  -fx-background-color: transparent;
+}
+
+.chart-plot-background {
+  -fx-background-color:transparent;
+}
+
+.chart-vertical-grid-lines {
+  -fx-stroke:#222;
+}
+
+.chart-horizontal-grid-lines {
+  -fx-stroke: #222;
+}
+
+.chart-title {
+  -fx-text-fill: white;
+  -fx-font-size: 1.6em;
+  -fx-font-family: "Open Sans";
+}
+
+.axis {
+  -fx-tick-label-fill: white;
+  -fx-tick-label-font: "Open Sans";
+}
+
+.axis-label {
+  -fx-font-family: "Open Sans";
+  -fx-text-fill: white;
+}
+
+.chart-series-line {
+  -fx-stroke-width: 1px;
+  -fx-effect: null;
+}
+
+.default-color0.chart-series-line { -fx-stroke: white; }
