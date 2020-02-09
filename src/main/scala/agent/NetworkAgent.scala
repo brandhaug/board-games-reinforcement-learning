@@ -2,8 +2,9 @@ package agent
 
 import environment.{Action, Environment}
 import environment.ActionType.ActionType
+import main.Arguments
 
-case class NetworkAgent(initialEnvironment: Environment) extends Agent {
+case class NetworkAgent(initialEnvironment: Environment, epsilonRate: Double = Arguments.actorEpsilonRate) extends Agent {
   def act(environment: Environment): Action = {
     ???
   }
@@ -12,7 +13,11 @@ case class NetworkAgent(initialEnvironment: Environment) extends Agent {
     ???
   }
 
-  def updateRates(): Agent = {
+  def updateEpsilonRate(): Agent = {
+    ???
+  }
+
+  def removeEpsilon(): Agent = {
     ???
   }
 }

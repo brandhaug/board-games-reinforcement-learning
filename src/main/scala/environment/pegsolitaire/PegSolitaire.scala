@@ -49,6 +49,7 @@ case class PegSolitaire(board: PegBoard) extends Environment {
           possibleActions += PegAction(x + 2, y + 2, ActionType.NorthWest)
         }
       }
+
       possibleActions
     }).flatten
   }

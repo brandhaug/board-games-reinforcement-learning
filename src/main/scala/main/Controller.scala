@@ -104,17 +104,21 @@ class Controller(pane: Pane,
     pegsLeftHistory = (for {
       episode <- 1 to Arguments.episodes
       memories = playEpisode(environment)
-      _        = println(f"Training: $episode / ${Arguments.episodes}, Reward: ${memories.last.environment.reward}")
+      _        = if (memories.nonEmpty) println(f"Training: $episode / ${Arguments.episodes}, Reward: ${memories.last.environment.reward}, ${agent.toString}")
+      _        = updateRates()
     } yield {
       if (memories.isEmpty) {
         println(f"No possible actions")
         0
       } else {
-        agent = agent.updateRates()
         memories.last.environment.pegsLeft
       }
     }).toList
     showChartButton.setVisible(true)
+  }
+
+  def updateRates(): Unit = {
+    agent = agent.updateEpsilonRate()
   }
 
   def playEpisode(environment: Environment, memories: List[Memory] = List.empty): List[Memory] = {
@@ -258,6 +262,7 @@ class Controller(pane: Pane,
       timeline.pause()
       startButton.setText("Start")
     } else {
+      agent = agent.removeEpsilon()
       timeline.play()
       startButton.setText("Pause")
     }
@@ -326,8 +331,8 @@ class Controller(pane: Pane,
     val yAxis     = new NumberAxis()
     val lineChart = LineChart(xAxis, yAxis)
     lineChart.title = "Pegs left"
-    lineChart.setPrefHeight(Pane.height)
-    lineChart.setPrefWidth(Pane.width)
+    lineChart.setPrefHeight(Window.height)
+    lineChart.setPrefWidth(Window.width)
 
     val data = ObservableBuffer(pegsLeftHistory.zipWithIndex map {
       case (pegsLeft, episode) => XYChart.Data[Number, Number](episode, pegsLeft)
@@ -343,7 +348,7 @@ class Controller(pane: Pane,
   }
 }
 
-object Pane {
+object Window {
   val width  = 800
   val height = 800
 }

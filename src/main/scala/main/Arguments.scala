@@ -5,33 +5,31 @@ import environment.EnvironmentType.EnvironmentType
 
 object Arguments {
   // 1. General
-  val mapsDirectoryName = "boards"
+  val mapsDirectoryName: String = "boards"
 
   // 2. Environment
   val environmentType: EnvironmentType = EnvironmentType.PegSolitaire
 
   // 3. GUI
-  val stepDelay = 0.2
+  val stepDelay: Double = 0.2
 
   // 4. Reinforcement Learning
-  val episodes: Int = 2000 // number of games we want the agent to play
+  val episodes: Int = 5000 // number of games we want the agent to play
 
   // 4.1 Actor
-  val actorEpsilonRate      = 1.0    // aka exploration rate
-  val actorEpsilonDecayRate = 0.995  // aka exploration decay rate
-  val actorEpsilonMinRate   = 0.0
-  val actorDiscountFactor   = 0.95   // aka gamma or discount rate
-  val actorLearningRate     = 0.001F // aka alpha or step size
-  val actorEligibilityRate = 0.0
-  val actorEligibilityDecayRate = 0.995
+  val actorEpsilonRate: Double      = 1.0 // aka exploration rate
+  val actorEpsilonDecayRate: Double = 0.998 // aka exploration decay rate
+  val actorEpsilonMinRate: Double   = 0.05
+
+  val actorDiscountFactor: Double       = 0.9 // aka gamma or discount rate [0.9, 0.99]
+  val actorLearningRate: Double         = 0.01 // aka alpha or step size
+  val actorEligibilityDecayRate: Double = 0.995
 
   //  4.2 Critic
-  val criticEpsilonRate      = 1.0 // aka exploration rate
-  val criticEpsilonDecayRate = 0.995 // aka exploration decay rate
-  val criticEpsilonMinRate   = 0.01
-  val criticDiscountFactor   = 0.0 // aka gamma
-  val criticLearningRate     = 0.01
+  val criticDiscountFactor: Double       = 0.9
+  val criticLearningRate: Double         = 0.01
+  val criticEligibilityDecayRate: Double = 0.995
 
   // 4.2.2 Neural Network
-  val criticNeuralNetworkDimensions = Seq(15, 20, 30, 5, 1)
+  val criticNeuralNetworkDimensions: Seq[Int] = Seq(15, 20, 30, 5, 1)
 }

@@ -4,8 +4,11 @@ import environment.{Action, Environment}
 
 import scala.util.Random
 
-abstract class Agent {
+trait Agent {
+
+
   val initialEnvironment: Environment
+  val epsilonRate: Double
   def act(environment: Environment): Action
   def train(memory: Memory): Agent = {
     train(List(memory))
@@ -15,5 +18,6 @@ abstract class Agent {
     val actionIndex = Random.nextInt(environment.possibleActions.length)
     environment.possibleActions(actionIndex)
   }
-  def updateRates(): Agent
+  def updateEpsilonRate(): Agent
+  def removeEpsilon(): Agent
 }
