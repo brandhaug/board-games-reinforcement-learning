@@ -1,7 +1,13 @@
 package agent
 
 import environment.{Action, Environment}
+import main.Arguments
 import main.Arguments._
+import org.platanios.tensorflow.api.{FLOAT32, INT64, Shape}
+import org.platanios.tensorflow.api.learn.Model
+import org.platanios.tensorflow.api.learn.layers.{Conv2D, Input, MaxPool, Mean, ReLU, ScalarSummary, SparseSoftmaxCrossEntropy}
+import org.platanios.tensorflow.api.ops.NN.ValidConvPadding
+import org.platanios.tensorflow.api.ops.training.optimizers.GradientDescent
 
 import scala.util.Random
 
@@ -108,5 +114,30 @@ case class TableAgent(initialEnvironment: Environment,
 
   override def toString: String = {
     s"StateActionRewardMap: ${stateActionRewardMap.size}, StateValueMap: ${stateValueMap.size}, EpsilonRate: $epsilonRate"
+  }
+
+  val model: Model = {
+    val inputShape = Shape(-1, initialEnvironment.board.grid.length, initialEnvironment.board.grid.head.length)
+    val input      = Input(FLOAT32, inputShape)
+    val trainInput = Input(INT64, Shape(-1))
+    val layer =
+      Conv2D[Float]("Layer_0", Shape(64, 3, 3), 3, 3, ValidConvPadding, useCuDNNOnGPU = false) >>
+        ReLU[Float]("Layer_0/Activation") >>
+        MaxPool[Float]("Layer_1", Seq(2, 2), 2, 2, ValidConvPadding) >>
+        ReLU[Float]("Layer_1/Activation") >>
+        Conv2D[Float]("OutputLayer", Shape(1, 3, 3), 3, 3, ValidConvPadding, useCuDNNOnGPU = false) >>
+        ReLU[Float]("OutputLayer/Activation")
+    val loss =
+      SparseSoftmaxCrossEntropy[Float, Long, Float]("Loss/CrossEntropy") >>
+        Mean[Float]("Loss/Mean") >>
+        ScalarSummary[Float]("Loss/Summary", "Loss")
+    val optimizer = GradientDescent(learningRate = Arguments.actorLearningRate.toFloat)
+    Model.simpleSupervised(
+      input = input,
+      trainInput = trainInput,
+      layer = layer,
+      loss = loss,
+      optimizer = optimizer
+    )
   }
 }

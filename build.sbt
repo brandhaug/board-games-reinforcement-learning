@@ -31,3 +31,4 @@ shellPrompt := { _ => System.getProperty("user.name") + s":${name.value}> " }
 
 libraryDependencies += "org.platanios" %% "tensorflow" % "0.4.1" classifier f"linux-gpu-x86_64"
 libraryDependencies += "org.platanios" %% "tensorflow" % "0.4.1"
+libraryDependencies += "org.deeplearning4j" % "deeplearning4j-core" % "1.0.0-beta4"
