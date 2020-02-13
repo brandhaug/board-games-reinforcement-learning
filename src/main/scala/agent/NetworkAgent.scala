@@ -20,4 +20,8 @@ case class NetworkAgent(initialEnvironment: Environment, epsilonRate: Double = A
   def removeEpsilon(): Agent = {
     ???
   }
+
+  def resetEligibilities(): Agent = {
+    ???
+  }
 }

@@ -20,4 +20,5 @@ trait Agent {
   }
   def updateEpsilonRate(): Agent
   def removeEpsilon(): Agent
+  def resetEligibilities(): Agent
 }

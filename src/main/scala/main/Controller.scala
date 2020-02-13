@@ -2,7 +2,7 @@ package main
 
 import java.io.File
 
-import agent.{Agent, AgentType, Memory, NetworkAgent, RandomAgent, TableAgent}
+import agent.{Agent, AgentType, Memory, NetworkAgent, TableAgent}
 import environment.{BoardType, Environment, EnvironmentType}
 import agent.AgentType.AgentType
 import environment.BoardType.BoardType
@@ -30,7 +30,6 @@ class Controller(pane: Pane,
                  createCustomEnvironmentButton: Button,
                  tableLookupRadioButton: RadioButton,
                  neuralNetworkRadioButton: RadioButton,
-                 randomRadioButton: RadioButton,
                  infoLabel: Label,
                  trainButton: Button,
                  startButton: Button,
@@ -123,13 +122,14 @@ class Controller(pane: Pane,
 
   def playEpisode(environment: Environment, memories: List[Memory] = List.empty): List[Memory] = {
     if (environment.possibleActions.isEmpty) {
+      agent = agent.resetEligibilities()
       memories
     } else {
       val action          = agent.act(environment)
       val nextEnvironment = environment.step(action)
       val memory          = Memory(environment, action, nextEnvironment)
-      agent = agent.train(memory)
       val nextMemories = memories :+ memory
+      agent = agent.train(nextMemories)
       playEpisode(nextEnvironment, nextMemories)
     }
   }
@@ -184,7 +184,7 @@ class Controller(pane: Pane,
     val inputValue       = customBoardSizeInput.getText
     val defaultBoardSize = 5
     val boardType        = customBoardTypeComboBox.getValue
-    val boardSize        = if (StringUtils.isNumeric(inputValue)) inputValue.toInt else defaultBoardSize
+    val boardSize        = if (inputValue.nonEmpty && StringUtils.isNumeric(inputValue)) inputValue.toInt else defaultBoardSize
     Arguments.environmentType match {
       case EnvironmentType.PegSolitaire => PegSolitaireFileReader.createEnvironment(boardType, boardSize)
       case _                            => throw new Exception("Unknown EnvironmentType")
@@ -196,7 +196,6 @@ class Controller(pane: Pane,
     selectedAgentType() match {
       case AgentType.TableLookup   => TableAgent(environment)
       case AgentType.NeuralNetwork => NetworkAgent(environment)
-      case AgentType.Random        => RandomAgent(environment)
       case _                       => throw new Exception("Unknown agent")
     }
   }
@@ -220,7 +219,6 @@ class Controller(pane: Pane,
   def initializeAgentToggleGroup(): Unit = {
     tableLookupRadioButton.setToggleGroup(agentToggleGroup)
     neuralNetworkRadioButton.setToggleGroup(agentToggleGroup)
-    randomRadioButton.setToggleGroup(agentToggleGroup)
     tableLookupRadioButton.setSelected(true)
   }
 
@@ -243,7 +241,6 @@ class Controller(pane: Pane,
   def selectedAgentType(): AgentType = {
     if (tableLookupRadioButton.selected()) AgentType.TableLookup
     else if (neuralNetworkRadioButton.selected()) AgentType.NeuralNetwork
-    else if (randomRadioButton.selected()) AgentType.Random
     else throw new Exception("No agent radio button selected")
   }
 

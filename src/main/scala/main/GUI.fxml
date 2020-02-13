@@ -19,7 +19,6 @@
         <Label styleClass="title-label" text="Agent type" textAlignment="CENTER" />
         <RadioButton fx:id="tableLookupRadioButton" mnemonicParsing="false" onAction="#selectAgentType" text="Table lookup" />
         <RadioButton fx:id="neuralNetworkRadioButton" mnemonicParsing="false" onAction="#selectAgentType" text="Neural network" />
-        <RadioButton fx:id="randomRadioButton" mnemonicParsing="false" onAction="#selectAgentType" text="Random" />
         <Label fx:id="infoLabel" styleClass="label" textAlignment="CENTER" />
         <Button fx:id="trainButton" onAction="#train" styleClass="button" text="Train" />
         <Button fx:id="startButton" onAction="#toggleStart" styleClass="button" />

@@ -58,7 +58,7 @@ case class TableAgent(initialEnvironment: Environment,
 
   def step(memories: List[Memory], currentAgent: TableAgent, temporalDifferenceError: Double, memoryIndex: Int = 0): Agent = {
     if (memoryIndex > memories.length - 1) {
-      TableAgent(initialEnvironment, currentAgent.stateActionRewardMap, currentAgent.stateValueMap, epsilonRate)
+      currentAgent
     } else {
       val memory   = memories(memoryIndex)
       val stateKey = memory.environment.toString
@@ -68,7 +68,7 @@ case class TableAgent(initialEnvironment: Environment,
       val criticEligibility = currentAgent.criticEligibilities(stateKey)
 
       val newStateValue    = stateValue + (criticLearningRate * temporalDifferenceError * criticEligibility)
-      val newStateValueMap = stateValueMap + (stateKey -> newStateValue)
+      val newStateValueMap = currentAgent.stateValueMap + (stateKey -> newStateValue)
 
       val newCriticEligibility   = criticDiscountFactor * criticEligibilityDecayRate * criticEligibility
       val newCriticEligibilities = currentAgent.criticEligibilities + (stateKey -> newCriticEligibility)
@@ -104,6 +104,10 @@ case class TableAgent(initialEnvironment: Environment,
 
   def removeEpsilon(): Agent = {
     TableAgent(initialEnvironment, stateActionRewardMap, stateValueMap, epsilonRate = 0)
+  }
+
+  def resetEligibilities(): Agent = {
+    TableAgent(initialEnvironment, stateActionRewardMap, stateValueMap, epsilonRate)
   }
 
   override def toString: String = {
