@@ -11,4 +11,5 @@ trait Cell {
   val strokeColor: Color
   val boardType: BoardType
   def render(gc: GraphicsContext, startX: Int, startY: Int, width: Int, height: Int): Unit
+  def cellValue: Int
 }

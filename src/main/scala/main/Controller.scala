@@ -5,6 +5,7 @@ import java.io.File
 import agent.{Agent, AgentType, Memory, NetworkAgent, TableAgent}
 import environment.{BoardType, Environment, EnvironmentType}
 import agent.AgentType.AgentType
+import deep.StateValueNetwork
 import environment.BoardType.BoardType
 import environment.pegsolitaire.PegSolitaireFileReader
 import scalafx.animation.{KeyFrame, Timeline}
@@ -195,7 +196,9 @@ class Controller(pane: Pane,
   def initializeAgent(environment: Environment): Agent = {
     selectedAgentType() match {
       case AgentType.TableLookup   => TableAgent(environment)
-      case AgentType.NeuralNetwork => NetworkAgent(environment)
+      case AgentType.NeuralNetwork =>
+        val stateValueNetwork = StateValueNetwork(environment)
+        NetworkAgent(environment, stateValueNetwork = stateValueNetwork)
       case _                       => throw new Exception("Unknown agent")
     }
   }

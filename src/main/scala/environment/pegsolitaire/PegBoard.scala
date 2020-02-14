@@ -1,6 +1,6 @@
 package environment.pegsolitaire
 
-import environment.{Board, BoardType, Cell}
+import environment.{Board, BoardType}
 import environment.BoardType.BoardType
 import main.Window
 import scalafx.scene.canvas.GraphicsContext

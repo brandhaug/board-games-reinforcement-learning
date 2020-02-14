@@ -1,27 +1,17 @@
 package agent
 
-import environment.{Action, Environment}
+import environment.Environment
 import main.Arguments._
 
 import scala.util.Random
 
 case class TableAgent(initialEnvironment: Environment,
                       stateActionRewardMap: Map[String, List[ActionReward]] = Map(),
-                      stateValueMap: Map[String, Double] = Map(),
                       epsilonRate: Double = actorEpsilonRate,
                       actorEligibilities: Map[String, List[Double]] = Map(),
-                      criticEligibilities: Map[String, Double] = Map())
+                      criticEligibilities: Map[String, Double] = Map(),
+                      stateValueMap: Map[String, Double] = Map())
     extends Agent {
-
-  def act(environment: Environment): Action = {
-    val stateActionRewardList = stateActionRewardMap.getOrElse(environment.toString, List.empty)
-
-    if (stateActionRewardList.isEmpty || Random.nextDouble() <= epsilonRate) {
-      randomAction(environment)
-    } else {
-      stateActionRewardList.maxBy(_.reward).action
-    }
-  }
 
   def train(memories: List[Memory]): Agent = {
     val memory = memories.last
@@ -52,7 +42,15 @@ case class TableAgent(initialEnvironment: Environment,
     val temporalDifferenceError = memory.nextEnvironment.reward + (criticDiscountFactor * nextStateValue) - stateValue
 
     // 3. New agent
-    val newAgent = TableAgent(initialEnvironment, newStateActionRewardMap, newStateValueMap, epsilonRate, newActorEligibilities, newCriticEligibilities)
+    val newAgent = TableAgent(
+      initialEnvironment,
+      stateActionRewardMap = newStateActionRewardMap,
+      epsilonRate = epsilonRate,
+      actorEligibilities = newActorEligibilities,
+      criticEligibilities = newCriticEligibilities,
+      stateValueMap = newStateValueMap
+    )
+
     step(memories, newAgent, temporalDifferenceError)
   }
 
@@ -92,22 +90,31 @@ case class TableAgent(initialEnvironment: Environment,
       val newActorEligibilityList = actorEligibilityList.updated(actionIndex, newActorEligibility)
       val newActorEligibilities   = currentAgent.actorEligibilities + (stateKey -> newActorEligibilityList)
 
-      val newAgent = TableAgent(initialEnvironment, newStateActionRewardMap, newStateValueMap, epsilonRate, newActorEligibilities, newCriticEligibilities)
+      val newAgent = TableAgent(
+        initialEnvironment,
+        stateActionRewardMap = newStateActionRewardMap,
+        epsilonRate = epsilonRate,
+        actorEligibilities = newActorEligibilities,
+        criticEligibilities = newCriticEligibilities,
+        stateValueMap = newStateValueMap
+      )
+
       step(memories, newAgent, temporalDifferenceError, memoryIndex = memoryIndex + 1)
     }
   }
 
   def updateEpsilonRate(): Agent = {
-    val newEpsilonRate = epsilonRate * actorEpsilonDecayRate
-    TableAgent(initialEnvironment, stateActionRewardMap, stateValueMap, epsilonRate = if (newEpsilonRate >= actorEpsilonMinRate) newEpsilonRate else actorEpsilonMinRate)
+    val potentialNewEpsilonRate = epsilonRate * actorEpsilonDecayRate
+    val newEpsilonRate          = if (potentialNewEpsilonRate >= actorEpsilonMinRate) potentialNewEpsilonRate else actorEpsilonMinRate
+    TableAgent(initialEnvironment, stateActionRewardMap = stateActionRewardMap, epsilonRate = newEpsilonRate, stateValueMap = stateValueMap)
   }
 
   def removeEpsilon(): Agent = {
-    TableAgent(initialEnvironment, stateActionRewardMap, stateValueMap, epsilonRate = 0)
+    TableAgent(initialEnvironment, stateActionRewardMap = stateActionRewardMap, epsilonRate = 0.0, stateValueMap = stateValueMap)
   }
 
   def resetEligibilities(): Agent = {
-    TableAgent(initialEnvironment, stateActionRewardMap, stateValueMap, epsilonRate)
+    TableAgent(initialEnvironment, stateActionRewardMap = stateActionRewardMap, epsilonRate = epsilonRate, stateValueMap = stateValueMap)
   }
 
   override def toString: String = {

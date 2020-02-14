@@ -23,11 +23,11 @@ val osName = System.getProperty("os.name") match {
 }
 libraryDependencies ++= javafxModules.map(m => "org.openjfx" % s"javafx-$m" % "12.0.2" classifier osName)
 
-
 // Fork a new JVM for 'run' and 'test:run', to avoid JavaFX double initialization problems
 fork := true
 
 shellPrompt := { _ => System.getProperty("user.name") + s":${name.value}> " }
 
-libraryDependencies += "org.platanios" %% "tensorflow" % "0.4.1" classifier f"linux-gpu-x86_64"
-libraryDependencies += "org.platanios" %% "tensorflow" % "0.4.1"
+// DL4J
+libraryDependencies += "org.deeplearning4j" % "deeplearning4j-core" % "1.0.0-beta4"
+libraryDependencies += "org.nd4j" % "nd4j-native-platform" % "1.0.0-beta4"

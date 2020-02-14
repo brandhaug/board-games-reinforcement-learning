@@ -41,6 +41,7 @@ case class PegCell(xIndex: Int, yIndex: Int, cellType: PegCellType, boardType: B
         gc.fillOval(startX, startY, width - 5, height)
       case _ => throw new Exception("Unknown BoardType")
     }
-
   }
+
+  def cellValue: Int = cellType.id
 }
