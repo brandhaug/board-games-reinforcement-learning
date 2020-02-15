@@ -112,7 +112,7 @@ class Controller(pane: Pane,
         println(f"No possible actions")
         0
       } else {
-        memories.last.environment.pegsLeft
+        memories.last.nextEnvironment.pegsLeft
       }
     }).toList
     showChartButton.setVisible(true)

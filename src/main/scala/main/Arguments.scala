@@ -11,14 +11,14 @@ object Arguments {
   val environmentType: EnvironmentType = EnvironmentType.PegSolitaire
 
   // 3. GUI
-  val stepDelay: Double = 2
+  val stepDelay: Double = 0.6
 
   // 4. Reinforcement Learning
-  val episodes: Int = 500 // number of games we want the agent to play
+  val episodes: Int = 10000 // number of games we want the agent to play
 
   // 4.1 Actor
   val actorEpsilonRate: Double      = 1.0 // aka exploration rate
-  val actorEpsilonDecayRate: Double = 0.995 // 0.9995 // aka exploration decay rate
+  val actorEpsilonDecayRate: Double = 0.9990 // aka exploration decay rate
   val actorEpsilonMinRate: Double   = 0.05
 
   val actorDiscountFactor: Double       = 0.9 // aka gamma or discount rate [0.9, 0.99]
