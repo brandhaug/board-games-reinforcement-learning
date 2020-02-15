@@ -90,6 +90,7 @@ class Controller(pane: Pane,
               toggleStart()
             } else {
               val action          = agent.act(environment)
+              println(action.toString)
               val nextEnvironment = environment.step(action)
               environment = nextEnvironment
               render(nextEnvironment)
