@@ -105,7 +105,7 @@ class Controller(pane: Pane,
     pegsLeftHistory = (for {
       episode <- 1 to Arguments.episodes
       memories = playEpisode(environment)
-      _        = if (memories.nonEmpty) println(f"Training: $episode / ${Arguments.episodes}, Reward: ${memories.last.environment.reward}, ${agent.toString}")
+      _        = if (memories.nonEmpty) println(f"Training: $episode / ${Arguments.episodes}, Reward: ${memories.last.nextEnvironment.reward}, ${agent.toString}")
       _        = updateRates()
     } yield {
       if (memories.isEmpty) {

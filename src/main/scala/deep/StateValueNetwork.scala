@@ -25,7 +25,7 @@ case class StateValueNetwork(initialEnvironment: Environment) {
     val builder = new NeuralNetConfiguration.Builder()
       .weightInit(WeightInit.XAVIER)
       .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-      .updater(new Sgd(Arguments.criticLearningRate))
+      .updater(new Sgd(Arguments.networkCriticLearningRate))
       .list()
 
     for (dimension <- Arguments.criticNeuralNetworkDimensions) {

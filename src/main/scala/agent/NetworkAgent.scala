@@ -62,7 +62,7 @@ case class NetworkAgent(initialEnvironment: Environment,
       val stateValue           = stateValueNetwork.predict(memory.environment.board.grid)
       val criticEligibility = currentAgent.criticEligibilities(stateKey)
 
-      val newStateValue        = stateValue + (criticLearningRate * temporalDifferenceError * criticEligibility)
+      val newStateValue        = stateValue + (tableCriticLearningRate * temporalDifferenceError * criticEligibility)
 //      val newStateValueNetwork = currentAgent.stateValueNetwork + (stateKey -> newStateValue)
       currentAgent.stateValueNetwork.fit(memory.environment.board.grid, newStateValue)
 

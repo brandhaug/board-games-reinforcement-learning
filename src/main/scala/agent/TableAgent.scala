@@ -65,7 +65,7 @@ case class TableAgent(initialEnvironment: Environment,
       val stateValue        = currentAgent.stateValueMap(stateKey)
       val criticEligibility = currentAgent.criticEligibilities(stateKey)
 
-      val newStateValue    = stateValue + (criticLearningRate * temporalDifferenceError * criticEligibility)
+      val newStateValue    = stateValue + (tableCriticLearningRate * temporalDifferenceError * criticEligibility)
       val newStateValueMap = currentAgent.stateValueMap + (stateKey -> newStateValue)
 
       val newCriticEligibility   = criticDiscountFactor * criticEligibilityDecayRate * criticEligibility
