@@ -2,14 +2,10 @@ package environment.pegsolitaire
 
 import environment.{Board, BoardType}
 import environment.BoardType.BoardType
-import main.Window
 import scalafx.scene.canvas.GraphicsContext
 
 case class PegBoard(grid: List[List[PegCell]], boardType: BoardType) extends Board {
-  val cellWidth: Int = Window.width / grid.head.length
-  val cellHeight: Int = Window.height / grid.length
-
-  def render(gc: GraphicsContext): Unit = {
+  override def render(gc: GraphicsContext): Unit = {
     for {
       (line, yIndex) <- grid.zipWithIndex
       (cell, xIndex) <- line.zipWithIndex

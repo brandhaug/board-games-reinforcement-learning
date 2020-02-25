@@ -7,16 +7,16 @@ import environment.{BoardType, Environment}
 
 import scala.io.Source
 
-object PegSolitaireFileReader {
+object PegEnvironmentCreator {
 
-  def createEnvironmentFromFile(file: File): PegSolitaire = {
+  def createEnvironmentFromFile(file: File): PegEnvironment = {
     val source              = Source.fromFile(file)
     val lines: List[String] = source.getLines.toList
     source.close()
     createEnvironmentFromLines(lines)
   }
 
-  def createEnvironment(boardType: BoardType, size: Int): PegSolitaire = {
+  def createEnvironment(boardType: BoardType, size: Int): PegEnvironment = {
     val pegId: String = "1"
     val emptyId: String = "0"
     val noneId: String = "-"
@@ -46,7 +46,7 @@ object PegSolitaireFileReader {
     createEnvironmentFromGridLines(gridLines, boardType)
   }
 
-  def createEnvironmentFromLines(lines: List[String]): PegSolitaire = {
+  def createEnvironmentFromLines(lines: List[String]): PegEnvironment = {
     val headerLine :: gridLines = lines
 
     val boardType = headerLine match {
@@ -59,7 +59,7 @@ object PegSolitaireFileReader {
     createEnvironmentFromGridLines(gridLines, boardType)
   }
 
-  def createEnvironmentFromGridLines(lines: List[String], boardType: BoardType): PegSolitaire = {
+  def createEnvironmentFromGridLines(lines: List[String], boardType: BoardType): PegEnvironment = {
     val grid = for {
       (line, y) <- lines.zipWithIndex
       lineList = line.split("").toList
@@ -69,7 +69,7 @@ object PegSolitaireFileReader {
     }
 
     val pegBoard = PegBoard(grid, boardType)
-    PegSolitaire(pegBoard)
+    PegEnvironment(pegBoard)
   }
 
   private def extractGridRowFromLine(lineList: List[String], y: Int, boardType: BoardType): List[PegCell] = {

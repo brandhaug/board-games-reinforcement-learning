@@ -2,7 +2,7 @@ package environment
 
 import ActionType.ActionType
 
-abstract class Action {
+trait Action {
   val x: Int
   val y: Int
   val actionType: ActionType

@@ -1,7 +1,7 @@
-package agent
+package applications.actorcritic.agent
 
 import environment.Environment
-import main.Arguments._
+import applications.actorcritic.Arguments._
 
 import scala.util.Random
 
@@ -41,7 +41,7 @@ case class TableAgent(initialEnvironment: Environment,
     val nextStateValue          = stateValueMap.getOrElse(nextStateKey, Random.nextDouble())
     val temporalDifferenceError = memory.nextEnvironment.reward + (criticDiscountFactor * nextStateValue) - stateValue
 
-    // 3. New agent
+    // 3. New applications.actorcritic.agent
     val newAgent = TableAgent(
       initialEnvironment,
       stateActionRewardMap = newStateActionRewardMap,

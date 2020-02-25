@@ -1,11 +1,11 @@
-package deep
+package applications.actorcritic.agent
 
+import applications.actorcritic.Arguments
 import environment.{Cell, Environment}
-import main.Arguments
 import org.deeplearning4j.nn.api.OptimizationAlgorithm
+import org.deeplearning4j.nn.conf.NeuralNetConfiguration
 import org.deeplearning4j.nn.conf.inputs.InputType
-import org.deeplearning4j.nn.conf.layers.{ConvolutionLayer, DenseLayer, OutputLayer}
-import org.deeplearning4j.nn.conf.{MultiLayerConfiguration, NeuralNetConfiguration}
+import org.deeplearning4j.nn.conf.layers.{DenseLayer, OutputLayer}
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork
 import org.deeplearning4j.nn.weights.WeightInit
 import org.nd4j.linalg.activations.Activation

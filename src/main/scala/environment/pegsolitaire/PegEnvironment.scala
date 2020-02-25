@@ -1,13 +1,12 @@
 package environment.pegsolitaire
 
 import environment.ActionType.ActionType
-import environment.{Action, ActionType, BoardType, Environment}
-import scalafx.scene.canvas.GraphicsContext
+import environment.{Action, ActionType, BoardType, Cell, Environment}
 import utils.ListUtils
 
 import scala.collection.mutable
 
-case class PegSolitaire(board: PegBoard) extends Environment {
+case class PegEnvironment(board: PegBoard) extends Environment {
   val pegsLeft: Int  = ListUtils.sumList(board.grid.map(_.count(_.isPeg)))
   val reward: Double = if (pegsLeft == 1) Double.MaxValue else Math.pow(board.grid.flatten.length - pegsLeft, 2)
   val possibleActions: List[Action] = {
@@ -75,10 +74,10 @@ case class PegSolitaire(board: PegBoard) extends Environment {
     }
 
     val newBoard = PegBoard(newGrid, board.boardType)
-    PegSolitaire(newBoard)
+    PegEnvironment(newBoard)
   }
 
-  def updateGridRowByAction(row: List[PegCell], y: Int, action: Action): List[PegCell] = {
+  private def updateGridRowByAction(row: List[PegCell], y: Int, action: Action): List[PegCell] = {
     for {
       (cell, x) <- row.zipWithIndex
     } yield {
@@ -103,10 +102,6 @@ case class PegSolitaire(board: PegBoard) extends Environment {
     }
   }
 
-  def render(gc: GraphicsContext): Unit = {
-    board.render(gc)
-  }
-
   def toggleCell(x: Int, y: Int): Environment = {
     val newGrid = for {
       (gridRow, yIndex) <- board.grid.zipWithIndex
@@ -116,10 +111,10 @@ case class PegSolitaire(board: PegBoard) extends Environment {
     }
 
     val newBoard = PegBoard(newGrid, board.boardType)
-    PegSolitaire(newBoard)
+    PegEnvironment(newBoard)
   }
 
-  def updateGridRowByToggle(x: Int, y: Int, row: List[PegCell], yIndex: Int): List[PegCell] = {
+  private def updateGridRowByToggle(x: Int, y: Int, row: List[PegCell], yIndex: Int): List[PegCell] = {
     for {
       (cell, xIndex) <- row.zipWithIndex
       cellStartX = board.cellStartX(row, xIndex)
@@ -137,5 +132,5 @@ case class PegSolitaire(board: PegBoard) extends Environment {
     }
   }
 
-  override def toString: String = board.grid.flatten.map(_.cellType.id).mkString("")
+  override def toString: String = board.grid.flatten.map(_.cellValue).mkString("")
 }

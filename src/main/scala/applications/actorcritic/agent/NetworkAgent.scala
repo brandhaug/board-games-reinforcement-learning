@@ -1,8 +1,7 @@
-package agent
+package applications.actorcritic.agent
 
-import deep.StateValueNetwork
 import environment.Environment
-import main.Arguments._
+import applications.actorcritic.Arguments._
 
 
 case class NetworkAgent(initialEnvironment: Environment,
@@ -38,7 +37,7 @@ case class NetworkAgent(initialEnvironment: Environment,
     val nextStateValue          = stateValueNetwork.predict(memory.environment.board.grid)
     val temporalDifferenceError = memory.nextEnvironment.reward + (criticDiscountFactor * nextStateValue) - stateValue
 
-    // 3. New agent
+    // 3. New applications.actorcritic.agent
     val newAgent = NetworkAgent(
       initialEnvironment,
       stateActionRewardMap = newStateActionRewardMap,

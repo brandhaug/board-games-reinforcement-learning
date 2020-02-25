@@ -11,6 +11,8 @@ trait Environment {
   val isDone: Boolean
   val actionTypes: Set[ActionType]
   def step(action: Action): Environment
-  def render(gc: GraphicsContext): Unit
   def toggleCell(x: Int, y: Int): Environment
+  def render(gc: GraphicsContext): Unit = {
+    board.render(gc)
+  }
 }

@@ -1,4 +1,4 @@
-package agent
+package applications.actorcritic.agent
 
 import environment.Action
 

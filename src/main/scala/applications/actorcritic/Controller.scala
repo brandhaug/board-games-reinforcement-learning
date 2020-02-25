@@ -1,13 +1,12 @@
-package main
+package applications.actorcritic
 
 import java.io.File
 
-import agent.{Agent, AgentType, Memory, NetworkAgent, TableAgent}
+import applications.actorcritic.agent.{Agent, AgentType, Memory, NetworkAgent, StateValueNetwork, TableAgent}
 import environment.{BoardType, Environment, EnvironmentType}
-import agent.AgentType.AgentType
-import deep.StateValueNetwork
+import applications.actorcritic.agent.AgentType.AgentType
 import environment.BoardType.BoardType
-import environment.pegsolitaire.PegSolitaireFileReader
+import environment.pegsolitaire.PegEnvironmentCreator
 import scalafx.animation.{KeyFrame, Timeline}
 import scalafx.scene.canvas.{Canvas, GraphicsContext}
 import scalafx.scene.control.{Button, ComboBox, Label, RadioButton, TextField, ToggleGroup}
@@ -41,11 +40,11 @@ class Controller(pane: Pane,
   val files: List[File]       = listFiles(Arguments.mapsDirectoryName)
   val fileNames: List[String] = files.map(file => file.getName).sorted
 
-  // Environment toggle group
+  // Agent toggle group
   val agentToggleGroup = new ToggleGroup()
   initializeAgentToggleGroup()
 
-  // Agent toggle group
+  // Environment toggle group
   val environmentToggleGroup = new ToggleGroup()
   initializeEnvironmentToggleGroup()
 
@@ -177,7 +176,7 @@ class Controller(pane: Pane,
     val selectedFile = files.find(file => file.getName == selectedFileName).get
 
     Arguments.environmentType match {
-      case EnvironmentType.PegSolitaire => PegSolitaireFileReader.createEnvironmentFromFile(selectedFile)
+      case EnvironmentType.PegSolitaire => PegEnvironmentCreator.createEnvironmentFromFile(selectedFile)
       case _                            => throw new Exception("Unknown EnvironmentType")
     }
   }
@@ -188,7 +187,7 @@ class Controller(pane: Pane,
     val boardType        = customBoardTypeComboBox.getValue
     val boardSize        = if (inputValue.nonEmpty && StringUtils.isNumeric(inputValue)) inputValue.toInt else defaultBoardSize
     Arguments.environmentType match {
-      case EnvironmentType.PegSolitaire => PegSolitaireFileReader.createEnvironment(boardType, boardSize)
+      case EnvironmentType.PegSolitaire => PegEnvironmentCreator.createEnvironment(boardType, boardSize)
       case _                            => throw new Exception("Unknown EnvironmentType")
     }
 
@@ -200,7 +199,7 @@ class Controller(pane: Pane,
       case AgentType.NeuralNetwork =>
         val stateValueNetwork = StateValueNetwork(environment)
         NetworkAgent(environment, stateValueNetwork = stateValueNetwork)
-      case _                       => throw new Exception("Unknown agent")
+      case _                       => throw new Exception("Unknown applications.actorcritic.agent")
     }
   }
 
@@ -245,7 +244,7 @@ class Controller(pane: Pane,
   def selectedAgentType(): AgentType = {
     if (tableLookupRadioButton.selected()) AgentType.TableLookup
     else if (neuralNetworkRadioButton.selected()) AgentType.NeuralNetwork
-    else throw new Exception("No agent radio button selected")
+    else throw new Exception("No applications.actorcritic.agent radio button selected")
   }
 
   def selectAgentType(): Unit = {
