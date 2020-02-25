@@ -34,5 +34,5 @@ object Arguments {
 
   // 4.2.2 Neural Network
   val networkCriticLearningRate: Double         = 0.0005
-  val criticNeuralNetworkDimensions: Seq[Int] = Seq(32) // cnn maxpool cnn maxpool dense
+  val criticNeuralNetworkDimensions: Seq[Int] = Seq(64, 64, 32)
 }

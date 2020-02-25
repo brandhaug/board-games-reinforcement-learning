@@ -4,7 +4,7 @@ import environment.{Cell, Environment}
 import main.Arguments
 import org.deeplearning4j.nn.api.OptimizationAlgorithm
 import org.deeplearning4j.nn.conf.inputs.InputType
-import org.deeplearning4j.nn.conf.layers.{ConvolutionLayer, OutputLayer}
+import org.deeplearning4j.nn.conf.layers.{ConvolutionLayer, DenseLayer, OutputLayer}
 import org.deeplearning4j.nn.conf.{MultiLayerConfiguration, NeuralNetConfiguration}
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork
 import org.deeplearning4j.nn.weights.WeightInit
@@ -30,8 +30,7 @@ case class StateValueNetwork(initialEnvironment: Environment) {
 
     for (dimension <- Arguments.criticNeuralNetworkDimensions) {
       builder.layer(
-        new ConvolutionLayer.Builder(3, 3)
-          .stride(1, 1)
+        new DenseLayer.Builder()
           .nOut(dimension)
           .activation(Activation.RELU)
           .build())
@@ -52,18 +51,22 @@ case class StateValueNetwork(initialEnvironment: Environment) {
     net
   }
 
-  def normalize(grid: List[List[Cell]]): Array[Array[Double]] = {
-    val values    = grid.map(_.map(_.cellValue.toDouble))
-    val flattened = values.flatten
-    val max       = flattened.max
-    val min       = flattened.min
-    values.map(_.map(value => (value - min) / (max - min)).toArray).toArray
+  def normalize(flattenedValues: List[Double]): List[Double] = {
+    val max             = flattenedValues.max
+    val min             = flattenedValues.min
+    flattenedValues.map(value => (value - min) / (max - min))
+  }
+
+  def flatten(grid: List[List[Cell]]): List[Double] = {
+    val values          = grid.map(_.map(_.cellValue.toDouble))
+    values.flatten
   }
 
   def preprocessInput(grid: List[List[Cell]]): INDArray = {
-    val normalized = normalize(grid)
-    val indArray   = Nd4j.create(normalized)
-    indArray.reshape(Array(miniBatchSize, channels, grid.size, grid.head.size))
+    val flattenedValues = flatten(grid)
+    val normalizedValues = normalize(flattenedValues)
+    val indArray   = Nd4j.create(normalizedValues.toArray)
+    indArray.reshape(Array(miniBatchSize, normalizedValues.size))
   }
 
   def preprocessLabel(label: Double): INDArray = {
