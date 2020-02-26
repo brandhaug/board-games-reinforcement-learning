@@ -1,10 +1,12 @@
 package environment
 
 import scalafx.scene.canvas.GraphicsContext
+import utils.ListUtils
 
 trait Environment {
-  val pegsLeft: Int
   val board: Board
+  val nonEmptyCells: Int  = ListUtils.sumList(board.grid.map(_.count(_.isNonEmpty)))
+  val emptyCells: Int  = ListUtils.sumList(board.grid.map(_.count(_.isEmpty)))
   val reward: Double
   val possibleActions: List[Action]
   def isDone: Boolean = possibleActions.isEmpty

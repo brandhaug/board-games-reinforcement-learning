@@ -14,7 +14,7 @@ object NimCell {
 case class NimCell(xIndex: Int, yIndex: Int, cellType: Int) extends Cell {
   val isEmpty: Boolean = cellType == NimCellType.Empty.id
   val isNone: Boolean  = cellType == NimCellType.None.id
-  val isPeg: Boolean   = cellType == NimCellType.Peg.id
+  val isNonEmpty: Boolean   = cellType == NimCellType.Peg.id
 
   val color: Color = {
     NimCellType(cellType) match {

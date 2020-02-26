@@ -1,13 +1,11 @@
 package environment.pegsolitaire
 
 import environment.{Action, BoardType, Environment}
-import utils.ListUtils
 
 import scala.collection.mutable
 
 case class PegEnvironment(board: PegBoard) extends Environment {
-  val pegsLeft: Int  = ListUtils.sumList(board.grid.map(_.count(_.isPeg)))
-  val reward: Double = if (pegsLeft == 1) Double.MaxValue else Math.pow(board.grid.flatten.length - pegsLeft, 2)
+  val reward: Double = if (nonEmptyCells == 1) Double.MaxValue else Math.pow(board.grid.flatten.length - nonEmptyCells, 2)
   val possibleActions: List[Action] = {
     (for {
       (row, y)  <- board.grid.zipWithIndex
@@ -15,35 +13,35 @@ case class PegEnvironment(board: PegBoard) extends Environment {
     } yield {
       val possibleActions = mutable.Set[Action]()
       if (cell.isEmpty) {
-        if (y < board.grid.length - 2 && board.grid(y + 1)(x).isPeg && board.grid(y + 2)(x).isPeg) {
+        if (y < board.grid.length - 2 && board.grid(y + 1)(x).isNonEmpty && board.grid(y + 2)(x).isNonEmpty) {
           possibleActions += PegAction(x, y + 2, PegActionType.North)
         }
 
-        if (board.boardType == BoardType.Diamond && y < board.grid.length - 2 && x > 1 && board.grid(y + 1)(x - 1).isPeg && board.grid(y + 2)(x - 2).isPeg) {
+        if (board.boardType == BoardType.Diamond && y < board.grid.length - 2 && x > 1 && board.grid(y + 1)(x - 1).isNonEmpty && board.grid(y + 2)(x - 2).isNonEmpty) {
           possibleActions += PegAction(x - 2, y + 2, PegActionType.NorthEast)
         }
 
-        if (x > 1 && row(x - 1).isPeg && row(x - 2).isPeg) {
+        if (x > 1 && row(x - 1).isNonEmpty && row(x - 2).isNonEmpty) {
           possibleActions += PegAction(x - 2, y, PegActionType.East)
         }
 
-        if (board.boardType == BoardType.Triangular && y > 1 && x > 1 && board.grid(y - 1)(x - 1).isPeg && board.grid(y - 2)(x - 2).isPeg) {
+        if (board.boardType == BoardType.Triangular && y > 1 && x > 1 && board.grid(y - 1)(x - 1).isNonEmpty && board.grid(y - 2)(x - 2).isNonEmpty) {
           possibleActions += PegAction(x - 2, y - 2, PegActionType.SouthEast)
         }
 
-        if (y > 1 && board.grid(y - 1)(x).isPeg && board.grid(y - 2)(x).isPeg) {
+        if (y > 1 && board.grid(y - 1)(x).isNonEmpty && board.grid(y - 2)(x).isNonEmpty) {
           possibleActions += PegAction(x, y - 2, PegActionType.South)
         }
 
-        if (board.boardType == BoardType.Diamond && y > 1 && x < row.length - 2 && board.grid(y - 1)(x + 1).isPeg && board.grid(y - 2)(x + 2).isPeg) {
+        if (board.boardType == BoardType.Diamond && y > 1 && x < row.length - 2 && board.grid(y - 1)(x + 1).isNonEmpty && board.grid(y - 2)(x + 2).isNonEmpty) {
           possibleActions += PegAction(x + 2, y - 2, PegActionType.SouthWest)
         }
 
-        if (x < row.length - 2 && row(x + 1).isPeg && row(x + 2).isPeg) {
+        if (x < row.length - 2 && row(x + 1).isNonEmpty && row(x + 2).isNonEmpty) {
           possibleActions += PegAction(x + 2, y, PegActionType.West)
         }
 
-        if (board.boardType == BoardType.Triangular && y < board.grid.length - 2 && x < row.length - 2 && board.grid(y + 1)(x + 1).isPeg && board.grid(y + 2)(x + 2).isPeg) {
+        if (board.boardType == BoardType.Triangular && y < board.grid.length - 2 && x < row.length - 2 && board.grid(y + 1)(x + 1).isNonEmpty && board.grid(y + 2)(x + 2).isNonEmpty) {
           possibleActions += PegAction(x + 2, y + 2, PegActionType.NorthWest)
         }
       }

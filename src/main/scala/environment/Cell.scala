@@ -13,7 +13,7 @@ trait Cell {
   val cellType: Int
   val isEmpty: Boolean
   val isNone: Boolean
-  val isPeg: Boolean
+  val isNonEmpty: Boolean
   def render(gc: GraphicsContext, startX: Int, startY: Int, width: Int, height: Int): Unit = {
     gc.setFill(color)
     gc.setStroke(strokeColor)

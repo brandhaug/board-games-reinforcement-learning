@@ -14,7 +14,7 @@ object PegCell {
 case class PegCell(xIndex: Int, yIndex: Int, cellType: Int, boardType: BoardType) extends Cell {
   val isEmpty: Boolean = cellType == PegCellType.Empty.id
   val isNone: Boolean = cellType == PegCellType.None.id
-  val isPeg: Boolean = cellType == PegCellType.Peg.id
+  val isNonEmpty: Boolean = cellType == PegCellType.Peg.id
 
   val color: Color = {
     PegCellType(cellType) match {
