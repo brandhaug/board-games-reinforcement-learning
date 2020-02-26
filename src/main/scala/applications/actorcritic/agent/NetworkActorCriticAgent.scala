@@ -1,6 +1,6 @@
 package applications.actorcritic.agent
 
-import environment.Environment
+import environment.{Environment, Memory}
 import applications.actorcritic.Arguments._
 
 

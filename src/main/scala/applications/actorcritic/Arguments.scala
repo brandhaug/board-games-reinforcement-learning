@@ -14,7 +14,7 @@ object Arguments {
   val stepDelay: Double = 0.6
 
   // 4. Reinforcement Learning
-  val episodes: Int = 1000 // number of games we want the applications.actorcritic.agent to play
+  val episodes: Int = 1000 // number of games we want the agent to play
 
   // 4.1 Actor
   val actorEpsilonRate: Double      = 1.0 // aka exploration rate

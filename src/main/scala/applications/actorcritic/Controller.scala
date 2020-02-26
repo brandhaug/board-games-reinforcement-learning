@@ -2,7 +2,7 @@ package applications.actorcritic
 
 import java.io.File
 
-import applications.actorcritic.agent.{ActorCriticAgent, ActorCriticAgentType, Memory, NetworkActorCriticAgent, StateValueNetwork, TableActorCriticAgent}
+import agent.{ActorCriticAgent, ActorCriticAgentType, Memory, NetworkActorCriticAgent, StateValueNetwork, TableActorCriticAgent}
 import environment.{BoardType, Environment, EnvironmentType}
 import applications.actorcritic.agent.ActorCriticAgentType.ActorCriticAgentType
 import environment.BoardType.BoardType

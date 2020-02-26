@@ -1,8 +1,10 @@
 package applications.mcts
 
-import applications.actorcritic.agent._
+import agent._
+import applications.mcts.PlayerType.StartingPlayerType
+import applications.mcts.agent.MonteCarloAgent
 import environment.nim.NimEnvironmentCreator
-import environment.Environment
+import environment.{Environment, Memory}
 import environment.ledge.LedgeEnvironmentCreator
 import scalafx.Includes._
 import scalafx.animation.{KeyFrame, Timeline}
@@ -13,6 +15,8 @@ import scalafx.scene.layout.Pane
 import scalafx.scene.paint.Color
 import scalafxml.core.macros.sfxml
 import utils.StringUtils
+
+import scala.util.Random
 
 @sfxml
 class Controller(pane: Pane,
@@ -37,6 +41,8 @@ class Controller(pane: Pane,
   var timeline: Timeline              = _
   var initialEnvironment: Environment = _
 
+  var agent: MonteCarloAgent = _
+
   // States
   var paused = true
 
@@ -45,6 +51,7 @@ class Controller(pane: Pane,
   def initialize(hardReset: Boolean = true): Unit = {
     if (hardReset) {
       initialEnvironment = initializeEnvironment()
+      agent = initializeAgent(initialEnvironment)
     }
 
     resetGui()
@@ -62,7 +69,7 @@ class Controller(pane: Pane,
             if (environment.possibleActions.isEmpty && !paused) {
               toggleStart()
             } else {
-//              val action = applications.actorcritic.agent.act(environment)
+//              val action = agent.act(environment)
 //              println(action.toString)
 //              val nextEnvironment = environment.step(action)
 //              environment = nextEnvironment
@@ -75,34 +82,49 @@ class Controller(pane: Pane,
 
   def train(): Unit = {
     val environment = initialEnvironment
-//    pegsLeftHistory = (for {
-//      episode <- 1 to Arguments.episodes
-//      memories = playEpisode(environment)
-//      _ = if (memories.nonEmpty) println(f"Training: $episode / ${Arguments.episodes}, Reward: ${memories.last.nextEnvironment.reward}, ${applications.actorcritic.agent.toString}")
-//      _ = updateRates()
-//    } yield {
-//      if (memories.isEmpty) {
-//        println(f"No possible actions")
-//        0
-//      } else {
-//        memories.last.nextEnvironment.pegsLeft
-//      }
-//    }).toList
+    for {
+      episode <- 1 to Arguments.epochs
+    } yield {
+      println(f"Episode $episode/${Arguments.epochs}")
+      trainBatch(environment)
+    }
   }
 
-  def playEpisode(environment: Environment, memories: List[Memory] = List.empty): List[Memory] = {
-//    if (environment.possibleActions.isEmpty) {
-//      applications.actorcritic.agent = applications.actorcritic.agent.resetEligibilities()
-//      memories
-//    } else {
-//      val action = applications.actorcritic.agent.act(environment)
-//      val nextEnvironment = environment.step(action)
-//      val memory = Memory(environment, action, nextEnvironment)
-//      val nextMemories = memories :+ memory
-//      applications.actorcritic.agent = applications.actorcritic.agent.train(nextMemories)
-//      playEpisode(nextEnvironment, nextMemories)
-//    }
-    ???
+  def trainBatch(environment: Environment): Unit = {
+    val startingPlayer = Arguments.startingPlayerType match {
+      case PlayerType.Mixed => {
+        val random = Random.nextDouble
+        if (random >= 0.5) PlayerType.Player1
+        else PlayerType.Player2
+      }
+      case startingPlayerType => startingPlayerType
+    }
+
+    val batchHistory = for {
+      episode <- (1 to Arguments.batchSize).toList
+    } yield {
+      println(f"Game $episode/${Arguments.batchSize}")
+      playGame(environment, playerType = startingPlayer)
+    }
+
+    agent = agent.train(batchHistory)
+  }
+
+  def playGame(environment: Environment, playerType: StartingPlayerType, memories: List[Memory] = List()): List[Memory] = {
+    if (environment.possibleActions.isEmpty) {
+      memories
+    } else {
+      val action = agent.act(environment)
+      val nextEnvironment = environment.step(action)
+      val memory = Memory(environment, action, nextEnvironment)
+      val nextMemories = memories :+ memory
+
+      val nextPlayerType = playerType match {
+        case PlayerType.Player1 => PlayerType.Player2
+        case PlayerType.Player2 => PlayerType.Player1
+      }
+      playGame(nextEnvironment, playerType = nextPlayerType, memories = nextMemories)
+    }
   }
 
   def render(environment: Environment): Unit = {
@@ -170,6 +192,10 @@ class Controller(pane: Pane,
       timeline.play()
       startButton.setText("Pause")
     }
+  }
+
+  def initializeAgent(environment: Environment): MonteCarloAgent = {
+    MonteCarloAgent(initialEnvironment)
   }
 
   def hardReset(): Unit = {

@@ -1,6 +1,6 @@
 package applications.actorcritic.agent
 
-import environment.{Action, Environment}
+import environment.{Action, Environment, Memory}
 
 import scala.util.Random
 

@@ -1,5 +1,3 @@
-package applications.actorcritic.agent
-
-import environment.{Action, Environment}
+package environment
 
 case class Memory (environment: Environment, action: Action, nextEnvironment: Environment)
