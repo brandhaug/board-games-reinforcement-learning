@@ -3,6 +3,7 @@ package applications.mcts
 import applications.actorcritic.agent._
 import environment.nim.NimEnvironmentCreator
 import environment.Environment
+import environment.ledge.LedgeEnvironmentCreator
 import scalafx.Includes._
 import scalafx.animation.{KeyFrame, Timeline}
 import scalafx.scene.canvas.{Canvas, GraphicsContext}
@@ -19,7 +20,7 @@ class Controller(pane: Pane,
                  nimEnvironmentRadioButton: RadioButton,
                  ledgeEnvironmentRadioButton: RadioButton,
                  boardSizeInput: TextField,
-                 boardMaxTakeInput: TextField,
+                 secondaryEnvironmentVariableInput: TextField,
                  createEnvironmentButton: Button,
                  trainButton: Button,
                  startButton: Button,
@@ -33,7 +34,7 @@ class Controller(pane: Pane,
   val gc: GraphicsContext = canvas.graphicsContext2D
 
   // Global variables
-  var timeline: Timeline = _
+  var timeline: Timeline              = _
   var initialEnvironment: Environment = _
 
   // States
@@ -112,25 +113,32 @@ class Controller(pane: Pane,
   }
 
   def resetGui(): Unit = {
+    if (nimEnvironmentRadioButton.selected()) {
+      secondaryEnvironmentVariableInput.setPromptText("Max take")
+    } else {
+      secondaryEnvironmentVariableInput.setPromptText("# Copper coins")
+    }
     startButton.setText("Start")
   }
 
   def initializeEnvironment(): Environment = {
+    val sizeInputValue                         = boardSizeInput.getText
+    val secondaryEnvironmentVariableInputValue = secondaryEnvironmentVariableInput.getText
+    val defaultSize                            = 20
+    val defaultSecondaryEnvironmentVariable    = 4
+    val size                                   = if (sizeInputValue.nonEmpty && StringUtils.isNumeric(sizeInputValue)) sizeInputValue.toInt else defaultSize
+    val secondaryEnvironmentVariable =
+      if (secondaryEnvironmentVariableInputValue.nonEmpty && StringUtils.isNumeric(secondaryEnvironmentVariableInputValue)) secondaryEnvironmentVariableInputValue.toInt
+      else defaultSecondaryEnvironmentVariable
+
     if (nimEnvironmentRadioButton.selected()) {
-      initializeNimEnvironment()
+      initializeNimEnvironment(size, maxTake = secondaryEnvironmentVariable)
     } else {
-      initializeLedgeEnvironment()
+      initializeLedgeEnvironment(size, copperCount = secondaryEnvironmentVariable)
     }
   }
 
-  def initializeNimEnvironment(): Environment = {
-    val sizeInputValue = boardSizeInput.getText
-    val maxTakeInputValue = boardMaxTakeInput.getText
-    val defaultSize = 20
-    val defaultMaxTake = 4
-    val size = if (sizeInputValue.nonEmpty && StringUtils.isNumeric(sizeInputValue)) sizeInputValue.toInt else defaultSize
-    val maxTake = if (maxTakeInputValue.nonEmpty && StringUtils.isNumeric(maxTakeInputValue)) maxTakeInputValue.toInt else defaultMaxTake
-
+  def initializeNimEnvironment(size: Int, maxTake: Int): Environment = {
     if (maxTake >= size) {
       throw new Exception("Max take must be less than boardsize")
     }
@@ -138,8 +146,12 @@ class Controller(pane: Pane,
     NimEnvironmentCreator.createEnvironment(size, maxTake)
   }
 
-  def initializeLedgeEnvironment(): Environment = {
-    ???
+  def initializeLedgeEnvironment(size: Int, copperCount: Int): Environment = {
+    if (copperCount >= size) {
+      throw new Exception("# Copper coints must be less than boardsize")
+    }
+
+    LedgeEnvironmentCreator.createEnvironment(size, copperCount)
   }
 
   def initializeEnvironmentToggleGroup(): Unit = {

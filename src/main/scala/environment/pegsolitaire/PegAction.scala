@@ -8,7 +8,7 @@ object PegAction {
   }
 }
 
-case class PegAction(x: Int, y: Int, actionType: Int) extends Action {
+case class PegAction(xIndex: Int, yIndex: Int, actionId: Int) extends Action {
 
 }
 

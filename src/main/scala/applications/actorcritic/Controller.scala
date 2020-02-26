@@ -2,9 +2,9 @@ package applications.actorcritic
 
 import java.io.File
 
-import applications.actorcritic.agent.{Agent, AgentType, Memory, NetworkAgent, StateValueNetwork, TableAgent}
+import applications.actorcritic.agent.{ActorCriticAgent, ActorCriticAgentType, Memory, NetworkActorCriticAgent, StateValueNetwork, TableActorCriticAgent}
 import environment.{BoardType, Environment, EnvironmentType}
-import applications.actorcritic.agent.AgentType.AgentType
+import applications.actorcritic.agent.ActorCriticAgentType.ActorCriticAgentType
 import environment.BoardType.BoardType
 import environment.pegsolitaire.PegEnvironmentCreator
 import scalafx.animation.{KeyFrame, Timeline}
@@ -57,7 +57,7 @@ class Controller(pane: Pane,
 
   // Global variables
   var timeline: Timeline              = _
-  var agent: Agent                    = _
+  var agent: ActorCriticAgent                    = _
   var initialEnvironment: Environment = _
   var pegsLeftHistory: List[Int]      = _
 
@@ -193,12 +193,12 @@ class Controller(pane: Pane,
 
   }
 
-  def initializeAgent(environment: Environment): Agent = {
+  def initializeAgent(environment: Environment): ActorCriticAgent = {
     selectedAgentType() match {
-      case AgentType.TableLookup   => TableAgent(environment)
-      case AgentType.NeuralNetwork =>
+      case ActorCriticAgentType.TableLookup   => TableActorCriticAgent(environment)
+      case ActorCriticAgentType.NeuralNetwork =>
         val stateValueNetwork = StateValueNetwork(environment)
-        NetworkAgent(environment, stateValueNetwork = stateValueNetwork)
+        NetworkActorCriticAgent(environment, stateValueNetwork = stateValueNetwork)
       case _                       => throw new Exception("Unknown applications.actorcritic.agent")
     }
   }
@@ -241,9 +241,9 @@ class Controller(pane: Pane,
     }
   }
 
-  def selectedAgentType(): AgentType = {
-    if (tableLookupRadioButton.selected()) AgentType.TableLookup
-    else if (neuralNetworkRadioButton.selected()) AgentType.NeuralNetwork
+  def selectedAgentType(): ActorCriticAgentType = {
+    if (tableLookupRadioButton.selected()) ActorCriticAgentType.TableLookup
+    else if (neuralNetworkRadioButton.selected()) ActorCriticAgentType.NeuralNetwork
     else throw new Exception("No applications.actorcritic.agent radio button selected")
   }
 

@@ -3,15 +3,17 @@ package applications.actorcritic.agent
 import environment.Environment
 import applications.actorcritic.Arguments._
 
+import scala.util.Random
 
-case class NetworkAgent(initialEnvironment: Environment,
-                        stateActionRewardMap: Map[String, List[ActionReward]] = Map(),
-                        epsilonRate: Double = actorEpsilonRate,
-                        actorEligibilities: Map[String, List[Double]] = Map(),
-                        criticEligibilities: Map[String, Double] = Map(),
-                        stateValueNetwork: StateValueNetwork)
-    extends Agent {
-  def train(memories: List[Memory]): Agent = {
+case class TableActorCriticAgent(initialEnvironment: Environment,
+                                 stateActionRewardMap: Map[String, List[ActionReward]] = Map(),
+                                 epsilonRate: Double = actorEpsilonRate,
+                                 actorEligibilities: Map[String, List[Double]] = Map(),
+                                 criticEligibilities: Map[String, Double] = Map(),
+                                 stateValueMap: Map[String, Double] = Map())
+    extends ActorCriticAgent {
+
+  def train(memories: List[Memory]): ActorCriticAgent = {
     val memory = memories.last
 
     // 1. Current environment
@@ -19,7 +21,8 @@ case class NetworkAgent(initialEnvironment: Environment,
     val actionIndex = memory.environment.possibleActions.indexOf(memory.action)
 
     // 1.1. Critic
-    val stateValue           = stateValueNetwork.predict(memory.environment.board.grid)
+    val stateValue       = stateValueMap.getOrElse(stateKey, Random.nextDouble())
+    val newStateValueMap = stateValueMap + (stateKey -> stateValue)
 
     val newCriticEligibilities = criticEligibilities + (stateKey -> 1.0)
 
@@ -32,25 +35,26 @@ case class NetworkAgent(initialEnvironment: Environment,
     val newActorEligibilities   = actorEligibilities + (stateKey -> newActorEligibilityList)
 
     // 2. Next environment
+    val nextStateKey = memory.nextEnvironment.toString
 
     // 2.1 Critic
-    val nextStateValue          = stateValueNetwork.predict(memory.environment.board.grid)
+    val nextStateValue          = stateValueMap.getOrElse(nextStateKey, Random.nextDouble())
     val temporalDifferenceError = memory.nextEnvironment.reward + (criticDiscountFactor * nextStateValue) - stateValue
 
     // 3. New applications.actorcritic.agent
-    val newAgent = NetworkAgent(
+    val newAgent = TableActorCriticAgent(
       initialEnvironment,
       stateActionRewardMap = newStateActionRewardMap,
       epsilonRate = epsilonRate,
       actorEligibilities = newActorEligibilities,
       criticEligibilities = newCriticEligibilities,
-      stateValueNetwork = stateValueNetwork
+      stateValueMap = newStateValueMap
     )
 
     step(memories, newAgent, temporalDifferenceError)
   }
 
-  def step(memories: List[Memory], currentAgent: NetworkAgent, temporalDifferenceError: Double, memoryIndex: Int = 0): Agent = {
+  def step(memories: List[Memory], currentAgent: TableActorCriticAgent, temporalDifferenceError: Double, memoryIndex: Int = 0): ActorCriticAgent = {
     if (memoryIndex > memories.length - 1) {
       currentAgent
     } else {
@@ -58,12 +62,11 @@ case class NetworkAgent(initialEnvironment: Environment,
       val stateKey = memory.environment.toString
 
       // Critic
-      val stateValue           = stateValueNetwork.predict(memory.environment.board.grid)
+      val stateValue        = currentAgent.stateValueMap(stateKey)
       val criticEligibility = currentAgent.criticEligibilities(stateKey)
 
-      val newStateValue        = stateValue + (tableCriticLearningRate * temporalDifferenceError * criticEligibility)
-//      val newStateValueNetwork = currentAgent.stateValueNetwork + (stateKey -> newStateValue)
-      currentAgent.stateValueNetwork.fit(memory.environment.board.grid, newStateValue)
+      val newStateValue    = stateValue + (tableCriticLearningRate * temporalDifferenceError * criticEligibility)
+      val newStateValueMap = currentAgent.stateValueMap + (stateKey -> newStateValue)
 
       val newCriticEligibility   = criticDiscountFactor * criticEligibilityDecayRate * criticEligibility
       val newCriticEligibilities = currentAgent.criticEligibilities + (stateKey -> newCriticEligibility)
@@ -87,34 +90,34 @@ case class NetworkAgent(initialEnvironment: Environment,
       val newActorEligibilityList = actorEligibilityList.updated(actionIndex, newActorEligibility)
       val newActorEligibilities   = currentAgent.actorEligibilities + (stateKey -> newActorEligibilityList)
 
-      val newAgent = NetworkAgent(
+      val newAgent = TableActorCriticAgent(
         initialEnvironment,
         stateActionRewardMap = newStateActionRewardMap,
         epsilonRate = epsilonRate,
         actorEligibilities = newActorEligibilities,
         criticEligibilities = newCriticEligibilities,
-        stateValueNetwork = stateValueNetwork
+        stateValueMap = newStateValueMap
       )
 
       step(memories, newAgent, temporalDifferenceError, memoryIndex = memoryIndex + 1)
     }
   }
 
-  def updateEpsilonRate(): Agent = {
+  def updateEpsilonRate(): ActorCriticAgent = {
     val potentialNewEpsilonRate = epsilonRate * actorEpsilonDecayRate
     val newEpsilonRate          = if (potentialNewEpsilonRate >= actorEpsilonMinRate) potentialNewEpsilonRate else actorEpsilonMinRate
-    NetworkAgent(initialEnvironment, stateActionRewardMap = stateActionRewardMap, epsilonRate = newEpsilonRate, stateValueNetwork = stateValueNetwork)
+    TableActorCriticAgent(initialEnvironment, stateActionRewardMap = stateActionRewardMap, epsilonRate = newEpsilonRate, stateValueMap = stateValueMap)
   }
 
-  def removeEpsilon(): Agent = {
-    NetworkAgent(initialEnvironment, stateActionRewardMap = stateActionRewardMap, epsilonRate = 0.0, stateValueNetwork = stateValueNetwork)
+  def removeEpsilon(): ActorCriticAgent = {
+    TableActorCriticAgent(initialEnvironment, stateActionRewardMap = stateActionRewardMap, epsilonRate = 0.0, stateValueMap = stateValueMap)
   }
 
-  def resetEligibilities(): Agent = {
-    NetworkAgent(initialEnvironment, stateActionRewardMap = stateActionRewardMap, epsilonRate = epsilonRate, stateValueNetwork = stateValueNetwork)
+  def resetEligibilities(): ActorCriticAgent = {
+    TableActorCriticAgent(initialEnvironment, stateActionRewardMap = stateActionRewardMap, epsilonRate = epsilonRate, stateValueMap = stateValueMap)
   }
 
   override def toString: String = {
-    s"StateActionRewardMap: ${stateActionRewardMap.size}, StateValueNetwork: ${stateValueNetwork.toString}, EpsilonRate: $epsilonRate"
+    s"StateActionRewardMap: ${stateActionRewardMap.size}, StateValueMap: ${stateValueMap.size}, EpsilonRate: $epsilonRate"
   }
 }

@@ -66,31 +66,31 @@ case class PegEnvironment(board: PegBoard) extends Environment {
     for {
       (cell, x) <- row.zipWithIndex
     } yield {
-      if (action.x == x && action.y == y) PegCell(x, y, PegCellType.Empty, board.boardType)
-      else if (action.actionType == PegActionType.North.id && action.y == y + 2 && action.x == x) PegCell(x, y, PegCellType.Peg, board.boardType)
-      else if (action.actionType == PegActionType.North.id && action.y == y + 1 && action.x == x) PegCell(x, y, PegCellType.Empty, board.boardType)
-      else if (action.actionType == PegActionType.NorthEast.id && action.y == y + 2 && action.x == x - 2) PegCell(x, y, PegCellType.Peg, board.boardType)
-      else if (action.actionType == PegActionType.NorthEast.id && action.y == y + 1 && action.x == x - 1) PegCell(x, y, PegCellType.Empty, board.boardType)
-      else if (action.actionType == PegActionType.East.id && action.y == y && action.x == x - 2) PegCell(x, y, PegCellType.Peg, board.boardType)
-      else if (action.actionType == PegActionType.East.id && action.y == y && action.x == x - 1) PegCell(x, y, PegCellType.Empty, board.boardType)
-      else if (action.actionType == PegActionType.SouthEast.id && action.y == y - 2 && action.x == x - 2) PegCell(x, y, PegCellType.Peg, board.boardType)
-      else if (action.actionType == PegActionType.SouthEast.id && action.y == y - 1 && action.x == x - 1) PegCell(x, y, PegCellType.Empty, board.boardType)
-      else if (action.actionType == PegActionType.South.id && action.y == y - 2 && action.x == x) PegCell(x, y, PegCellType.Peg, board.boardType)
-      else if (action.actionType == PegActionType.South.id && action.y == y - 1 && action.x == x) PegCell(x, y, PegCellType.Empty, board.boardType)
-      else if (action.actionType == PegActionType.SouthWest.id && action.y == y - 2 && action.x == x + 2) PegCell(x, y, PegCellType.Peg, board.boardType)
-      else if (action.actionType == PegActionType.SouthWest.id && action.y == y - 1 && action.x == x + 1) PegCell(x, y, PegCellType.Empty, board.boardType)
-      else if (action.actionType == PegActionType.West.id && action.y == y && action.x == x + 2) PegCell(x, y, PegCellType.Peg, board.boardType)
-      else if (action.actionType == PegActionType.West.id && action.y == y && action.x == x + 1) PegCell(x, y, PegCellType.Empty, board.boardType)
-      else if (action.actionType == PegActionType.NorthWest.id && action.y == y + 2 && action.x == x + 2) PegCell(x, y, PegCellType.Peg, board.boardType)
-      else if (action.actionType == PegActionType.NorthWest.id && action.y == y + 1 && action.x == x + 1) PegCell(x, y, PegCellType.Empty, board.boardType)
+      if (action.xIndex == x && action.yIndex == y) PegCell(x, y, PegCellType.Empty, board.boardType)
+      else if (action.actionId == PegActionType.North.id && action.yIndex == y + 2 && action.xIndex == x) PegCell(x, y, PegCellType.Peg, board.boardType)
+      else if (action.actionId == PegActionType.North.id && action.yIndex == y + 1 && action.xIndex == x) PegCell(x, y, PegCellType.Empty, board.boardType)
+      else if (action.actionId == PegActionType.NorthEast.id && action.yIndex == y + 2 && action.xIndex == x - 2) PegCell(x, y, PegCellType.Peg, board.boardType)
+      else if (action.actionId == PegActionType.NorthEast.id && action.yIndex == y + 1 && action.xIndex == x - 1) PegCell(x, y, PegCellType.Empty, board.boardType)
+      else if (action.actionId == PegActionType.East.id && action.yIndex == y && action.xIndex == x - 2) PegCell(x, y, PegCellType.Peg, board.boardType)
+      else if (action.actionId == PegActionType.East.id && action.yIndex == y && action.xIndex == x - 1) PegCell(x, y, PegCellType.Empty, board.boardType)
+      else if (action.actionId == PegActionType.SouthEast.id && action.yIndex == y - 2 && action.xIndex == x - 2) PegCell(x, y, PegCellType.Peg, board.boardType)
+      else if (action.actionId == PegActionType.SouthEast.id && action.yIndex == y - 1 && action.xIndex == x - 1) PegCell(x, y, PegCellType.Empty, board.boardType)
+      else if (action.actionId == PegActionType.South.id && action.yIndex == y - 2 && action.xIndex == x) PegCell(x, y, PegCellType.Peg, board.boardType)
+      else if (action.actionId == PegActionType.South.id && action.yIndex == y - 1 && action.xIndex == x) PegCell(x, y, PegCellType.Empty, board.boardType)
+      else if (action.actionId == PegActionType.SouthWest.id && action.yIndex == y - 2 && action.xIndex == x + 2) PegCell(x, y, PegCellType.Peg, board.boardType)
+      else if (action.actionId == PegActionType.SouthWest.id && action.yIndex == y - 1 && action.xIndex == x + 1) PegCell(x, y, PegCellType.Empty, board.boardType)
+      else if (action.actionId == PegActionType.West.id && action.yIndex == y && action.xIndex == x + 2) PegCell(x, y, PegCellType.Peg, board.boardType)
+      else if (action.actionId == PegActionType.West.id && action.yIndex == y && action.xIndex == x + 1) PegCell(x, y, PegCellType.Empty, board.boardType)
+      else if (action.actionId == PegActionType.NorthWest.id && action.yIndex == y + 2 && action.xIndex == x + 2) PegCell(x, y, PegCellType.Peg, board.boardType)
+      else if (action.actionId == PegActionType.NorthWest.id && action.yIndex == y + 1 && action.xIndex == x + 1) PegCell(x, y, PegCellType.Empty, board.boardType)
       else cell
     }
   }
 
   def toggleCell(x: Int, y: Int): Environment = {
     val newGrid = for {
-      (gridRow, yIndex) <- board.grid.zipWithIndex
-      newGridRow = updateGridRowByToggle(x, y, gridRow, yIndex)
+      gridRow <- board.grid
+      newGridRow = updateGridRowByToggle(x, y, gridRow)
     } yield {
       newGridRow
     }
@@ -99,18 +99,17 @@ case class PegEnvironment(board: PegBoard) extends Environment {
     PegEnvironment(newBoard)
   }
 
-  private def updateGridRowByToggle(x: Int, y: Int, row: List[PegCell], yIndex: Int): List[PegCell] = {
+  private def updateGridRowByToggle(x: Int, y: Int, row: List[PegCell]): List[PegCell] = {
     for {
-      (cell, xIndex) <- row.zipWithIndex
-      cellStartX = board.cellStartX(row, xIndex)
-      cellStartY = yIndex * board.cellHeight
+      cell <- row
+      cellStartX = board.cellStartX(row, cell.xIndex)
+      cellStartY = cell.yIndex * board.cellHeight
     } yield {
       if (x > cellStartX && x < cellStartX + board.cellWidth && y > cellStartY && y < cellStartY + board.cellHeight) {
         PegCellType(cell.cellType) match {
           case PegCellType.Peg => PegCell(cell.xIndex, cell.yIndex, PegCellType.Empty, cell.boardType)
           case PegCellType.Empty => PegCell(cell.xIndex, cell.yIndex, PegCellType.None, cell.boardType)
           case PegCellType.None  => PegCell(cell.xIndex, cell.yIndex, PegCellType.Peg, cell.boardType)
-          case _ => throw new Exception("Unknown PegCellType")
         }
       } else {
         cell

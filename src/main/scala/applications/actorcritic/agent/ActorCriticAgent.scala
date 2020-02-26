@@ -4,7 +4,7 @@ import environment.{Action, Environment}
 
 import scala.util.Random
 
-trait Agent {
+trait ActorCriticAgent {
   val initialEnvironment: Environment
   val stateActionRewardMap: Map[String, List[ActionReward]]
   val epsilonRate: Double
@@ -22,12 +22,12 @@ trait Agent {
   }
 
   private def randomAction(environment: Environment): Action = {
-    val actionIndex = Random.nextInt(environment.possibleActions.length)
+    val actionIndex = Random.nextInt(environment.possibleActions.size)
     environment.possibleActions(actionIndex)
   }
 
-  def train(memory: List[Memory]): Agent
-  def updateEpsilonRate(): Agent
-  def removeEpsilon(): Agent
-  def resetEligibilities(): Agent
+  def train(memory: List[Memory]): ActorCriticAgent
+  def updateEpsilonRate(): ActorCriticAgent
+  def removeEpsilon(): ActorCriticAgent
+  def resetEligibilities(): ActorCriticAgent
 }

@@ -10,15 +10,15 @@ case class NimEnvironment(board: Board, maxTake: Int) extends Environment {
   }
 
   def step(action: Action): Environment = {
-    val take          = action.actionType
+    val take          = action.actionId
     val newEmptyCells = emptyCells + take
     NimEnvironmentCreator.createEnvironment(nonEmptyCells + emptyCells, maxTake, emptyCells = newEmptyCells)
   }
 
   def toggleCell(x: Int, y: Int): Environment = {
     val newGrid = for {
-      (gridRow, yIndex) <- board.grid.zipWithIndex
-      newGridRow = updateGridRowByToggle(x, y, gridRow, yIndex)
+      gridRow <- board.grid
+      newGridRow = updateGridRowByToggle(x, y, gridRow)
     } yield {
       newGridRow
     }
@@ -27,17 +27,17 @@ case class NimEnvironment(board: Board, maxTake: Int) extends Environment {
     NimEnvironment(newBoard, maxTake)
   }
 
-  private def updateGridRowByToggle(x: Int, y: Int, row: List[Cell], yIndex: Int): List[Cell] = {
+  private def updateGridRowByToggle(x: Int, y: Int, row: List[Cell]): List[Cell] = {
     for {
-      (cell, xIndex) <- row.zipWithIndex
-      cellStartX = xIndex * board.cellWidth
-      cellStartY = yIndex * board.cellHeight
+      cell <- row
+      cellStartX = cell.xIndex * board.cellWidth
+      cellStartY = cell.yIndex * board.cellHeight
     } yield {
       if (x > cellStartX && x < cellStartX + board.cellWidth && y > cellStartY && y < cellStartY + board.cellHeight) {
         NimCellType(cell.cellType) match {
           case NimCellType.Peg   => NimCell(cell.xIndex, cell.yIndex, NimCellType.Empty)
           case NimCellType.Empty => NimCell(cell.xIndex, cell.yIndex, NimCellType.Peg)
-          case NimCellType.None  => NimCell(cell.xIndex, cell.yIndex, NimCellType.None)
+          case _  => cell
         }
       } else {
         cell

@@ -1,10 +1,10 @@
 package environment
 
 trait Action {
-  val x: Int
-  val y: Int
-  val actionType: Int
+  val xIndex: Int
+  val yIndex: Int
+  val actionId: Int
   def equals(otherAction: Action): Boolean = {
-    x == otherAction.x && y == otherAction.y && actionType == otherAction.actionType
+    xIndex == otherAction.xIndex && yIndex == otherAction.yIndex && actionId == otherAction.actionId
   }
 }
