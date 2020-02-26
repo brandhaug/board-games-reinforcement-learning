@@ -1,6 +1,5 @@
 package environment
 
-import environment.ActionType.ActionType
 import scalafx.scene.canvas.GraphicsContext
 
 trait Environment {
@@ -8,11 +7,10 @@ trait Environment {
   val board: Board
   val reward: Double
   val possibleActions: List[Action]
-  val isDone: Boolean
-  val actionTypes: Set[ActionType]
-  def step(action: Action): Environment
-  def toggleCell(x: Int, y: Int): Environment
+  def isDone: Boolean = possibleActions.isEmpty
   def render(gc: GraphicsContext): Unit = {
     board.render(gc)
   }
+  def step(action: Action): Environment
+  def toggleCell(x: Int, y: Int): Environment
 }

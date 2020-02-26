@@ -42,6 +42,6 @@ object NimEnvironmentCreator {
 
     val board = NimBoard(gridWithModulo)
 
-    NimEnvironment(board)
+    NimEnvironment(board, maxTake)
   }
 }

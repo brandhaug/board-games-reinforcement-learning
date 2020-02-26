@@ -1,7 +1,5 @@
 package environment
 
-import java.util
-
 import environment.BoardType.BoardType
 import scalafx.scene.canvas.GraphicsContext
 import scalafx.scene.paint.Color
@@ -12,7 +10,10 @@ trait Cell {
   val color: Color
   val strokeColor: Color
   val boardType: BoardType
-  val cellValue: Int
+  val cellType: Int
+  val isEmpty: Boolean
+  val isNone: Boolean
+  val isPeg: Boolean
   def render(gc: GraphicsContext, startX: Int, startY: Int, width: Int, height: Int): Unit = {
     gc.setFill(color)
     gc.setStroke(strokeColor)

@@ -1,8 +1,8 @@
 package environment.nim
 
-import environment.{Board, BoardType}
+import environment.{Board, BoardType, Cell}
 import environment.BoardType.BoardType
 
-case class NimBoard (grid: List[List[NimCell]]) extends Board {
+case class NimBoard (grid: List[List[Cell]]) extends Board {
   override val boardType: BoardType = BoardType.Square
 }

@@ -1,4 +1,5 @@
 package environment.nim
 
-case class NimAction (size: Int) {
-}
+import environment.Action
+
+case class NimAction(x: Int, y: Int, actionType: Int) extends Action {}

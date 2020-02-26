@@ -58,7 +58,7 @@ case class StateValueNetwork(initialEnvironment: Environment) {
   }
 
   def flatten(grid: List[List[Cell]]): List[Double] = {
-    val values          = grid.map(_.map(_.cellValue.toDouble))
+    val values          = grid.map(_.map(_.cellType.toDouble))
     values.flatten
   }
 

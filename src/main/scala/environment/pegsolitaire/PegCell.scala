@@ -1,17 +1,23 @@
 package environment.pegsolitaire
 
 import environment.BoardType.BoardType
-import environment.{BoardType, Cell}
+import environment.Cell
 import environment.pegsolitaire.PegCellType.PegCellType
 import scalafx.scene.paint.Color
 
-case class PegCell(xIndex: Int, yIndex: Int, cellType: PegCellType, boardType: BoardType) extends Cell {
-  val isEmpty: Boolean = cellType == PegCellType.Empty
-  val isNone: Boolean = cellType == PegCellType.None
-  val isPeg: Boolean = cellType == PegCellType.Peg
+object PegCell {
+  def apply(xIndex: Int, yIndex: Int, cellType: PegCellType, boardType: BoardType): PegCell = {
+    PegCell(xIndex, yIndex, cellType.id, boardType)
+  }
+}
+
+case class PegCell(xIndex: Int, yIndex: Int, cellType: Int, boardType: BoardType) extends Cell {
+  val isEmpty: Boolean = cellType == PegCellType.Empty.id
+  val isNone: Boolean = cellType == PegCellType.None.id
+  val isPeg: Boolean = cellType == PegCellType.Peg.id
 
   val color: Color = {
-    cellType match {
+    PegCellType(cellType) match {
       case PegCellType.Peg   => Color.Red
       case PegCellType.Empty => Color.White
       case PegCellType.None  => Color.Transparent
@@ -19,12 +25,17 @@ case class PegCell(xIndex: Int, yIndex: Int, cellType: PegCellType, boardType: B
   }
 
   val strokeColor: Color = {
-    cellType match {
+    PegCellType(cellType) match {
       case PegCellType.Peg   => Color.Black
       case PegCellType.Empty => Color.Black
       case PegCellType.None  => Color.Transparent
     }
   }
+}
 
-  val cellValue: Int = cellType.id
+object PegCellType extends Enumeration {
+  type PegCellType = Value
+  val None: PegCellType.Value = Value(0)
+  val Peg: PegCellType.Value   = Value(1)
+  val Empty: PegCellType.Value = Value(2)
 }
