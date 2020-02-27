@@ -1,11 +1,13 @@
 package applications.mcts
 
 import agent._
-import applications.mcts.PlayerType.StartingPlayerType
+import applications.mcts
+import applications.mcts.PlayerType.PlayerType
 import applications.mcts.agent.MonteCarloAgent
-import environment.nim.NimEnvironmentCreator
-import environment.{Environment, Memory}
-import environment.ledge.LedgeEnvironmentCreator
+import environment.adverserial.AdverserialMemory
+import environment.adverserial.nim.NimEnvironmentCreator
+import environment.{Action, Environment, EnvironmentType, Memory}
+import environment.adverserial.ledge.{LedgeCellType, LedgeEnvironmentCreator}
 import scalafx.Includes._
 import scalafx.animation.{KeyFrame, Timeline}
 import scalafx.scene.canvas.{Canvas, GraphicsContext}
@@ -60,6 +62,13 @@ class Controller(pane: Pane,
 
     var environment = initialEnvironment
 
+    environment.environmentType match {
+      case EnvironmentType.Nim => println(f"Starting pile: ${environment.nonEmptyCells} stones")
+      case EnvironmentType.Ledge => println(f"Start board: [${environment.toString}]")
+    }
+
+    var playerType = getStartingPlayerType
+
     timeline = new Timeline {
       cycleCount = Timeline.Indefinite
       keyFrames = Seq(
@@ -69,11 +78,38 @@ class Controller(pane: Pane,
             if (environment.possibleActions.isEmpty && !paused) {
               toggleStart()
             } else {
-//              val action = agent.act(environment)
-//              println(action.toString)
-//              val nextEnvironment = environment.step(action)
-//              environment = nextEnvironment
-//              render(nextEnvironment)
+              val action = getAction(environment, playerType)
+
+              val nextEnvironment = environment.step(action)
+              val nextPlayerType = getNextPlayerType(playerType)
+//              val memory          = AdverserialMemory(environment, action, nextEnvironment, playerType)
+//              val nextMemories    = memories :+ memory
+
+              environment.environmentType match {
+                case EnvironmentType.Nim =>
+                  println(f"P${playerType.id} selects ${action.actionId} stones. Remaining stones = ${nextEnvironment.nonEmptyCells}")
+                case EnvironmentType.Ledge =>
+                  val fromCellIndex = (action.yIndex * environment.board.grid(action.yIndex).size) + action.xIndex
+                  val fromCell = environment.board.grid(action.yIndex)(action.xIndex)
+                  val fromCellType = LedgeCellType(fromCell.cellType) match {
+                    case LedgeCellType.Copper => "copper"
+                    case LedgeCellType.Gold => "gold"
+                  }
+                  val actionString = if (action.xIndex == 0 && action.yIndex == 0) {
+                    f"removes ${fromCellType} from cell ${fromCellIndex}"
+                  } else {
+                    f"moves ${fromCellType} from cell ${fromCellIndex} to cell ${action.actionId}"
+                  }
+                  println(f"P${playerType.id} ${actionString}: [${environment.toString}]")
+              }
+
+              if (nextEnvironment.possibleActions.isEmpty && !paused) {
+                println(f"P${playerType.id} wins")
+              }
+
+              environment = nextEnvironment
+              playerType = nextPlayerType
+              render(nextEnvironment)
             }
           }
         ))
@@ -91,14 +127,7 @@ class Controller(pane: Pane,
   }
 
   def trainBatch(environment: Environment): Unit = {
-    val startingPlayer = Arguments.startingPlayerType match {
-      case PlayerType.Mixed => {
-        val random = Random.nextDouble
-        if (random >= 0.5) PlayerType.Player1
-        else PlayerType.Player2
-      }
-      case startingPlayerType => startingPlayerType
-    }
+    val startingPlayer = getStartingPlayerType
 
     val batchHistory = for {
       episode <- (1 to Arguments.batchSize).toList
@@ -107,22 +136,42 @@ class Controller(pane: Pane,
       playGame(environment, playerType = startingPlayer)
     }
 
-    agent = agent.train(batchHistory)
+    agent = agent.trainBatch(batchHistory)
   }
 
-  def playGame(environment: Environment, playerType: StartingPlayerType, memories: List[Memory] = List()): List[Memory] = {
+  def getStartingPlayerType: PlayerType = Arguments.startingPlayerType match {
+    case PlayerType.Mixed =>
+      val random = Random.nextDouble
+      if (random >= 0.5) PlayerType.Player1
+      else PlayerType.Player2
+    case startingPlayerType => startingPlayerType
+  }
+
+  def getNextPlayerType(playerType: PlayerType): PlayerType = {
+    playerType match {
+      case PlayerType.Player1 => PlayerType.Player2
+      case PlayerType.Player2 => PlayerType.Player1
+    }
+  }
+
+  def getAction(environment: Environment, playerType: PlayerType): Action = {
+    playerType match {
+      case PlayerType.Player1 => agent.randomAction(environment)
+      case PlayerType.Player2 => agent.randomAction(environment)
+    }
+  }
+
+  def playGame(environment: Environment, playerType: PlayerType, memories: List[Memory] = List()): List[Memory] = {
     if (environment.possibleActions.isEmpty) {
       memories
     } else {
-      val action = agent.act(environment)
-      val nextEnvironment = environment.step(action)
-      val memory = Memory(environment, action, nextEnvironment)
-      val nextMemories = memories :+ memory
+      val action = getAction(environment, playerType)
 
-      val nextPlayerType = playerType match {
-        case PlayerType.Player1 => PlayerType.Player2
-        case PlayerType.Player2 => PlayerType.Player1
-      }
+      val nextEnvironment = environment.step(action)
+      val memory          = AdverserialMemory(environment, action, nextEnvironment, playerType)
+      val nextMemories    = memories :+ memory
+
+      val nextPlayerType = getNextPlayerType(playerType)
       playGame(nextEnvironment, playerType = nextPlayerType, memories = nextMemories)
     }
   }

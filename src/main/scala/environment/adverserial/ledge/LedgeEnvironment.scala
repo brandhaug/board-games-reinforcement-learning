@@ -1,33 +1,39 @@
-package environment.ledge
+package environment.adverserial.ledge
 
-import environment.{Action, Board, Cell, Environment}
+import environment.EnvironmentType.EnvironmentType
+import environment.{Action, Board, Cell, Environment, EnvironmentType}
 
 import scala.collection.mutable
 
 case class LedgeEnvironment(board: Board) extends Environment {
+  val environmentType: EnvironmentType = EnvironmentType.Ledge
+  val goldExists: Boolean = board.grid.flatten.exists(_.cellType == LedgeCellType.Gold.id)
   val reward: Double = {
-    val goldExists = board.grid.flatten.exists(_.cellType == LedgeCellType.Gold.id)
     if (goldExists) 0 else 100
   }
   val possibleActions: List[Action] = {
-    val flattenedGrid = board.grid.flatten
+    if (!goldExists) {
+      List.empty
+    } else {
+      val flattenedGrid = board.grid.flatten
 
-    (for {
-      (cell, index) <- flattenedGrid.zipWithIndex
-    } yield {
-      val possibleActions = mutable.Set[Action]()
-      if (index == 0 && cell.isNonEmpty) possibleActions += LedgeAction(0, 0, 0)
-      else if (cell.isEmpty) {
-        val nextNonEmptyCellOption = flattenedGrid.find(cell2 => flattenedGrid.indexOf(cell2) > index && cell2.isNonEmpty)
+      (for {
+        (cell, index) <- flattenedGrid.zipWithIndex
+      } yield {
+        val possibleActions = mutable.Set[Action]()
+        if (index == 0 && cell.isNonEmpty) possibleActions += LedgeAction(0, 0, 0)
+        else if (cell.isEmpty) {
+          val nextNonEmptyCellOption = flattenedGrid.find(cell2 => flattenedGrid.indexOf(cell2) > index && cell2.isNonEmpty)
 
-        if (nextNonEmptyCellOption.nonEmpty) {
-          val nextNonEmptyCell = nextNonEmptyCellOption.get
-          possibleActions += LedgeAction(nextNonEmptyCell.xIndex, nextNonEmptyCell.yIndex, index)
+          if (nextNonEmptyCellOption.nonEmpty) {
+            val nextNonEmptyCell = nextNonEmptyCellOption.get
+            possibleActions += LedgeAction(nextNonEmptyCell.xIndex, nextNonEmptyCell.yIndex, index)
+          }
         }
-      }
 
-      possibleActions
-    }).flatten
+        possibleActions
+      }).flatten
+    }
   }
 
   def step(action: Action): Environment = {
@@ -45,13 +51,13 @@ case class LedgeEnvironment(board: Board) extends Environment {
   private def updateGridRowByAction(action: Action, row: List[Cell]): List[Cell] = {
     for {
       cell <- row
-      cellIndex = (cell.yIndex * board.grid.size) + cell.xIndex
+      cellIndex = (cell.yIndex * row.size) + cell.xIndex
     } yield {
-      if (cellIndex == action.actionId) {
+      if (cell.xIndex == action.xIndex && cell.yIndex == action.yIndex) {
+        LedgeCell(cell.xIndex, cell.yIndex, LedgeCellType.Empty)
+      } else if (cellIndex == action.actionId) {
         val newCellType = board.grid(action.yIndex)(action.xIndex).cellType
         LedgeCell(cell.xIndex, cell.yIndex, newCellType)
-      } else if (cell.xIndex == action.xIndex && cell.yIndex == action.yIndex) {
-        LedgeCell(cell.xIndex, cell.yIndex, LedgeCellType.Empty)
       } else {
         cell
       }
@@ -88,5 +94,5 @@ case class LedgeEnvironment(board: Board) extends Environment {
     }
   }
 
-  override def toString: String = board.grid.flatten.map(_.cellType).mkString("")
+  override def toString: String = board.grid.flatten.map(_.toString).mkString(" ")
 }

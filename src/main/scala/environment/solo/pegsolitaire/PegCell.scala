@@ -1,8 +1,8 @@
-package environment.pegsolitaire
+package environment.solo.pegsolitaire
 
 import environment.BoardType.BoardType
 import environment.Cell
-import environment.pegsolitaire.PegCellType.PegCellType
+import environment.solo.pegsolitaire.PegCellType.PegCellType
 import scalafx.scene.paint.Color
 
 object PegCell {

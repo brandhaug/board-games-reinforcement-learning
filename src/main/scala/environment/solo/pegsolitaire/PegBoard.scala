@@ -1,4 +1,4 @@
-package environment.pegsolitaire
+package environment.solo.pegsolitaire
 
 import environment.{Board, BoardType}
 import environment.BoardType.BoardType

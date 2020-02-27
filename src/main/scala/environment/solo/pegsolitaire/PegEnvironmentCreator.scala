@@ -1,4 +1,4 @@
-package environment.pegsolitaire
+package environment.solo.pegsolitaire
 
 import java.io.File
 

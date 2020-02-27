@@ -1,4 +1,4 @@
-package environment.nim
+package environment.adverserial.nim
 
 object NimEnvironmentCreator {
 

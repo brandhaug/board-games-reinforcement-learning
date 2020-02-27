@@ -1,10 +1,12 @@
-package environment.pegsolitaire
+package environment.solo.pegsolitaire
 
-import environment.{Action, BoardType, Environment}
+import environment.EnvironmentType.EnvironmentType
+import environment.{Action, BoardType, Environment, EnvironmentType}
 
 import scala.collection.mutable
 
 case class PegEnvironment(board: PegBoard) extends Environment {
+  val environmentType: EnvironmentType = EnvironmentType.PegSolitaire
   val reward: Double = if (nonEmptyCells == 1) Double.MaxValue else Math.pow(board.grid.flatten.length - nonEmptyCells, 2)
   val possibleActions: List[Action] = {
     (for {

@@ -1,10 +1,12 @@
 package environment
 
+import environment.EnvironmentType.EnvironmentType
 import scalafx.scene.canvas.GraphicsContext
 import utils.ListUtils
 
 trait Environment {
   val board: Board
+  val environmentType: EnvironmentType
   val nonEmptyCells: Int  = ListUtils.sumList(board.grid.map(_.count(_.isNonEmpty)))
   val emptyCells: Int  = ListUtils.sumList(board.grid.map(_.count(_.isEmpty)))
   val reward: Double

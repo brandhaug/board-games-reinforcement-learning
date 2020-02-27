@@ -1,6 +1,6 @@
-package environment.pegsolitaire
+package environment.solo.pegsolitaire
 import environment.Action
-import environment.pegsolitaire.PegActionType.PegActionType
+import environment.solo.pegsolitaire.PegActionType.PegActionType
 
 object PegAction {
   def apply(x: Int, y: Int, actionType: PegActionType): PegAction = {

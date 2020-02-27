@@ -1,4 +1,4 @@
-package environment.ledge
+package environment.adverserial.ledge
 
 import environment.Action
 

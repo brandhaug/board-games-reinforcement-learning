@@ -1,11 +1,11 @@
 package applications.actorcritic.agent
 
+import agent.Agent
 import environment.{Action, Environment, Memory}
 
 import scala.util.Random
 
-trait ActorCriticAgent {
-  val initialEnvironment: Environment
+trait ActorCriticAgent extends Agent {
   val stateActionRewardMap: Map[String, List[ActionReward]]
   val epsilonRate: Double
   val actorEligibilities: Map[String, List[Double]]
@@ -19,11 +19,6 @@ trait ActorCriticAgent {
     } else {
       stateActionRewardList.maxBy(_.reward).action
     }
-  }
-
-  private def randomAction(environment: Environment): Action = {
-    val actionIndex = Random.nextInt(environment.possibleActions.size)
-    environment.possibleActions(actionIndex)
   }
 
   def train(memory: List[Memory]): ActorCriticAgent

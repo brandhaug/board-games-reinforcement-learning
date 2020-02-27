@@ -2,11 +2,12 @@ package applications.actorcritic
 
 import java.io.File
 
-import agent.{ActorCriticAgent, ActorCriticAgentType, Memory, NetworkActorCriticAgent, StateValueNetwork, TableActorCriticAgent}
+import agent.{ActorCriticAgent, ActorCriticAgentType, NetworkActorCriticAgent, StateValueNetwork, TableActorCriticAgent}
 import environment.{BoardType, Environment, EnvironmentType}
 import applications.actorcritic.agent.ActorCriticAgentType.ActorCriticAgentType
 import environment.BoardType.BoardType
-import environment.pegsolitaire.PegEnvironmentCreator
+import environment.solo.SoloMemory
+import environment.solo.pegsolitaire.PegEnvironmentCreator
 import scalafx.animation.{KeyFrame, Timeline}
 import scalafx.scene.canvas.{Canvas, GraphicsContext}
 import scalafx.scene.control.{Button, ComboBox, Label, RadioButton, TextField, ToggleGroup}
@@ -121,14 +122,14 @@ class Controller(pane: Pane,
     agent = agent.updateEpsilonRate()
   }
 
-  def playEpisode(environment: Environment, memories: List[Memory] = List.empty): List[Memory] = {
+  def playEpisode(environment: Environment, memories: List[SoloMemory] = List.empty): List[SoloMemory] = {
     if (environment.possibleActions.isEmpty) {
       agent = agent.resetEligibilities()
       memories
     } else {
       val action          = agent.act(environment)
       val nextEnvironment = environment.step(action)
-      val memory          = Memory(environment, action, nextEnvironment)
+      val memory          = SoloMemory(environment, action, nextEnvironment)
       val nextMemories = memories :+ memory
       agent = agent.train(nextMemories)
       playEpisode(nextEnvironment, nextMemories)

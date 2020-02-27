@@ -1,7 +1,7 @@
 package applications.mcts
 
 object PlayerType extends Enumeration {
-    type StartingPlayerType = Value
+    type PlayerType = Value
 
     // Actor-critic
     val Mixed: PlayerType.Value = Value(0)

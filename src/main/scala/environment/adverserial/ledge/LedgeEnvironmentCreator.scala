@@ -1,4 +1,4 @@
-package environment.ledge
+package environment.adverserial.ledge
 
 import scala.annotation.tailrec
 import scala.util.Random

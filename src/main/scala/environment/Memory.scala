@@ -1,3 +1,7 @@
 package environment
 
-case class Memory (environment: Environment, action: Action, nextEnvironment: Environment)
+trait Memory {
+  val environment: Environment
+  val action: Action
+  val nextEnvironment: Environment
+}

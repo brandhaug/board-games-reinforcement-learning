@@ -2,7 +2,7 @@ package applications.mcts
 
 object Arguments {
   // GUI
-  val stepDelay: Double = 0.6
+  val stepDelay: Double = 2
 
   // Game simulator
   val startingPlayerType = PlayerType.Mixed

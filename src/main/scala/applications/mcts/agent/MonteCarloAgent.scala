@@ -1,7 +1,19 @@
 package applications.mcts.agent
 
-import environment.Environment
+import agent.Agent
+import environment.{Action, Environment, Memory}
 
-case class MonteCarloAgent(initialEnvironment: Environment) {
+case class MonteCarloAgent(initialEnvironment: Environment) extends Agent {
+  def act(environment: Environment): Action = {
+    ???
+  }
+
+  def trainBatch(memory: List[List[Memory]]): MonteCarloAgent = {
+    ???
+  }
+
+  def train(memory: List[Memory]): Agent = {
+    ???
+  }
 
 }
