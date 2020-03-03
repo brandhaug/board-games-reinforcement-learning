@@ -1,11 +1,12 @@
 package applications.mcts.agent
 
-import agent.Agent
+import baseagent.Agent
 import applications.mcts.{Arguments, PlayerType}
 import applications.mcts.PlayerType.PlayerType
-import environment.{Action, Environment, Memory}
+import environment.{Action, Environment}
 
-case class MonteCarloAgent(initialEnvironment: Environment, stateVisitMap: Map[String, Int] = Map(), stateValueMap: Map[String, Double] = Map(), totalVisits: Int = 0) extends Agent {
+case class MonteCarloAgent(stateVisitMap: Map[String, Int] = Map(),
+                           stateValueMap: Map[String, Double] = Map()) extends Agent {
 
   def act(environment: Environment): Action = {
     simulate(environment)
@@ -27,14 +28,14 @@ case class MonteCarloAgent(initialEnvironment: Environment, stateVisitMap: Map[S
     val stateKey    = environment.toString
     val stateVisits = stateVisitMap.getOrElse(stateKey, 0)
 
-    if (environment.possibleActions.isEmpty) {
+    if (environment.possibleActions.isEmpty) { // TODO: WHY
       this
     } else if (parents.nonEmpty && stateVisits == 0) {
       val rolloutResult = rollout(environment)
       backpropagate(rolloutResult, parents :+ environment)
     } else {
-      val rootKey = if (parents.isEmpty) environment.toString else parents.head.toString
-      val rootVisits = stateVisitMap.getOrElse(rootKey, 0)
+      val rootKey         = if (parents.isEmpty) environment.toString else parents.head.toString
+      val rootVisits      = stateVisitMap.getOrElse(rootKey, 0)
       val selectedAction  = selectAction(environment, playerType, rootVisits)
       val nextEnvironment = environment.step(selectedAction)
       val nextPlayerType  = PlayerType.getNextPlayerType(playerType)
@@ -56,9 +57,8 @@ case class MonteCarloAgent(initialEnvironment: Environment, stateVisitMap: Map[S
       val newStateValue    = stateValue + result
       val newStateVisitMap = stateVisitMap + (stateKey -> (stateVisits + 1))
       val newStateValueMap = stateValueMap + (stateKey -> newStateValue)
-      val newTotalVisits   = totalVisits + 1
 
-      val newAgent = MonteCarloAgent(initialEnvironment, newStateVisitMap, newStateValueMap, newTotalVisits)
+      val newAgent = MonteCarloAgent(newStateVisitMap, newStateValueMap)
 
       newAgent.backpropagate(result, environments.drop(1))
     }
@@ -108,54 +108,7 @@ case class MonteCarloAgent(initialEnvironment: Environment, stateVisitMap: Map[S
     val stateKey    = environment.toString
     val stateVisits = stateVisitMap.getOrElse(stateKey, 0)
 
-//    val stateActionVisitList = stateActionVisitMap.getOrElse(stateKey, List.fill(possibleActions.size)(0))
-//    val actionIndex          = possibleActions.indexOf(action)
-//    val stateActionVisits    = stateActionVisitList(actionIndex)
-
     if (stateVisits == 0) Double.MaxValue
     else Arguments.upperConfidenceBoundWeight * Math.sqrt(Math.log(rootVisits) / (1 + stateVisits).toDouble)
-  }
-
-  def trainBatch(memoryLists: List[List[Memory]]): MonteCarloAgent = {
-    if (memoryLists.isEmpty) {
-      this
-    } else {
-      val memories = memoryLists.head
-      val newAgent = train(memories)
-      newAgent.trainBatch(memoryLists.drop(1))
-    }
-  }
-
-  def train(memories: List[Memory]): MonteCarloAgent = {
-    if (memories.isEmpty) {
-      this
-    } else {
-      val memory   = memories.head
-      val newAgent = train(memory)
-      newAgent.train(memories.drop(1))
-    }
-  }
-
-  def train(memory: Memory): MonteCarloAgent = {
-    ???
-//    val stateKey        = memory.environment.toString
-//    val possibleActions = memory.environment.possibleActions
-//    val actionIndex     = possibleActions.indexOf(memory.action)
-//
-//    val actionValueList        = stateActionValueMap.getOrElse(stateKey, possibleActions.map(action => ActionValue(action)))
-//    val actionValue            = actionValueList(actionIndex)
-//    val newActionValue         = ActionValue(actionValue.action, actionValue.value + Random.nextDouble())
-//    val newActionValueList     = actionValueList.updated(actionIndex, newActionValue)
-//    val newStateActionValueMap = stateActionValueMap + (stateKey -> newActionValueList)
-//
-//    val stateVisits      = stateVisitMap.getOrElse(stateKey, 0)
-//    val newStateVisitMap = stateVisitMap + (stateKey -> (stateVisits + 1))
-//
-//    val stateActionVisitList    = stateActionVisitMap.getOrElse(stateKey, List.fill(possibleActions.size)(0))
-//    val stateActionVisits       = stateActionVisitList(actionIndex)
-//    val newStateActionVisitList = stateActionVisitList.updated(actionIndex, stateActionVisits + 1)
-//    val newStateActionVisitMap  = stateActionVisitMap + (stateKey -> newStateActionVisitList)
-//
-//    MonteCarloAgent(initialEnvironment, newStateActionValueMap, newStateVisitMap, newStateActionVisitMap)
   }
 }

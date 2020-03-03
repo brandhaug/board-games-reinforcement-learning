@@ -8,12 +8,13 @@ object Arguments {
 
   // Game simulator
   val startingPlayerType: PlayerType = PlayerType.Mixed
+  val verbose: Boolean = false
 
   // Training
-  val epochs: Int    = 500 // number of batches we want the agent to run
+  val epochs: Int    = 50 // number of batches we want the agent to run
   val batchSize: Int = 64  // should be able to handle 100
 
   // MCTS
-  val simulations: Int                   = 15
+  val simulations: Int                   = 500
   val upperConfidenceBoundWeight: Double = 1.0
 }

@@ -1,11 +1,12 @@
 package applications.actorcritic.agent
 
-import agent.Agent
+import baseagent.Agent
 import environment.{Action, Environment, Memory}
 
 import scala.util.Random
 
 trait ActorCriticAgent extends Agent {
+  val initialEnvironment: Environment
   val stateActionValuePairMap: Map[String, List[ActionValuePair]]
   val epsilonRate: Double
   val actorEligibilities: Map[String, List[Double]]

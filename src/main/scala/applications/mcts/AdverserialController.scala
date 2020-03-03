@@ -1,10 +1,11 @@
 package applications.mcts
 
+import agent.MonteCarloAgent
 import applications.mcts.PlayerType.PlayerType
-import applications.mcts.agent.MonteCarloAgent
+import baseagent.Agent
 import environment.adverserial.AdverserialMemory
 import environment.adverserial.nim.NimEnvironmentCreator
-import environment.{Action, Environment, EnvironmentType, Memory}
+import environment.{Action, Environment, EnvironmentType}
 import environment.adverserial.ledge.{LedgeCellType, LedgeEnvironmentCreator}
 import scalafx.Includes._
 import scalafx.animation.{KeyFrame, Timeline}
@@ -41,7 +42,7 @@ class Controller(pane: Pane,
   var timeline: Timeline              = _
   var initialEnvironment: Environment = _
 
-  var agent: MonteCarloAgent = _
+  var agent: Agent = _
 
   // States
   var paused = true
@@ -51,7 +52,7 @@ class Controller(pane: Pane,
   def initialize(hardReset: Boolean = true): Unit = {
     if (hardReset) {
       initialEnvironment = initializeEnvironment()
-      agent = initializeAgent(initialEnvironment)
+      agent = initializeAgent()
     }
 
     resetGui()
@@ -118,27 +119,24 @@ class Controller(pane: Pane,
   }
 
   def train(): Unit = {
-    val environment = initialEnvironment
     for {
-      episode <- 1 to Arguments.epochs
+      epoch <- 1 to Arguments.epochs
     } yield {
-      trainBatch(environment, episode)
+      trainBatch(epoch)
     }
   }
 
-  def trainBatch(environment: Environment, episode: Int): Unit = {
-    val startingPlayer = getStartingPlayerType
-
+  def trainBatch(epoch: Int): Unit = {
     val batchHistory = for {
       _ <- (1 to Arguments.batchSize).toList
+      startingPlayer = getStartingPlayerType
+      environment = initializeEnvironment()
     } yield {
       playGame(environment, playerType = startingPlayer)
     }
 
     val winCount = batchHistory.count(memories => memories.last.playerType == PlayerType.Player1)
-    println(f"Episode $episode/${Arguments.epochs} - Wins: ${winCount}/${batchHistory.size} (${((winCount.toDouble / batchHistory.size.toDouble) * 100).round}%%)")
-
-//    agent = agent.trainBatch(batchHistory)
+    println(f"Epoch $epoch/${Arguments.epochs} - Wins: ${winCount}/${batchHistory.size} (${((winCount.toDouble / batchHistory.size.toDouble) * 100).round}%%)")
   }
 
   def getStartingPlayerType: PlayerType = Arguments.startingPlayerType match {
@@ -161,8 +159,8 @@ class Controller(pane: Pane,
       memories
     } else {
       val action = getAction(environment, playerType)
-
       val nextEnvironment = environment.step(action)
+      if (Arguments.verbose) printEnvironment(environment, action, playerType, nextEnvironment)
       val memory          = AdverserialMemory(environment, action, nextEnvironment, playerType)
       val nextMemories    = memories :+ memory
 
@@ -238,8 +236,8 @@ class Controller(pane: Pane,
     }
   }
 
-  def initializeAgent(environment: Environment): MonteCarloAgent = {
-    MonteCarloAgent(initialEnvironment)
+  def initializeAgent(): Agent = {
+    MonteCarloAgent()
   }
 
   def hardReset(): Unit = {
