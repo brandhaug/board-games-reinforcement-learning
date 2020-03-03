@@ -1,7 +1,5 @@
 package applications.mcts
 
-import agent._
-import applications.mcts
 import applications.mcts.PlayerType.PlayerType
 import applications.mcts.agent.MonteCarloAgent
 import environment.adverserial.AdverserialMemory
@@ -71,6 +69,7 @@ class Controller(pane: Pane,
 
     timeline = new Timeline {
       cycleCount = Timeline.Indefinite
+
       keyFrames = Seq(
         KeyFrame(
           Arguments.stepDelay s,
@@ -81,31 +80,9 @@ class Controller(pane: Pane,
               val action = getAction(environment, playerType)
 
               val nextEnvironment = environment.step(action)
-              val nextPlayerType = getNextPlayerType(playerType)
-//              val memory          = AdverserialMemory(environment, action, nextEnvironment, playerType)
-//              val nextMemories    = memories :+ memory
+              val nextPlayerType = PlayerType.getNextPlayerType(playerType)
 
-              environment.environmentType match {
-                case EnvironmentType.Nim =>
-                  println(f"P${playerType.id} selects ${action.actionId} stones. Remaining stones = ${nextEnvironment.nonEmptyCells}")
-                case EnvironmentType.Ledge =>
-                  val fromCellIndex = (action.yIndex * environment.board.grid(action.yIndex).size) + action.xIndex
-                  val fromCell = environment.board.grid(action.yIndex)(action.xIndex)
-                  val fromCellType = LedgeCellType(fromCell.cellType) match {
-                    case LedgeCellType.Copper => "copper"
-                    case LedgeCellType.Gold => "gold"
-                  }
-                  val actionString = if (action.xIndex == 0 && action.yIndex == 0) {
-                    f"removes ${fromCellType} from cell ${fromCellIndex}"
-                  } else {
-                    f"moves ${fromCellType} from cell ${fromCellIndex} to cell ${action.actionId}"
-                  }
-                  println(f"P${playerType.id} ${actionString}: [${environment.toString}]")
-              }
-
-              if (nextEnvironment.possibleActions.isEmpty && !paused) {
-                println(f"P${playerType.id} wins")
-              }
+              printEnvironment(environment, action, playerType, nextEnvironment)
 
               environment = nextEnvironment
               playerType = nextPlayerType
@@ -116,27 +93,52 @@ class Controller(pane: Pane,
     }
   }
 
+  def printEnvironment(environment: Environment, action: Action, playerType: PlayerType, nextEnvironment: Environment): Unit = {
+    environment.environmentType match {
+      case EnvironmentType.Nim =>
+        println(f"P${playerType.id} selects ${action.actionId} stones. Remaining stones = ${nextEnvironment.nonEmptyCells}")
+      case EnvironmentType.Ledge =>
+        val fromCellIndex = (action.yIndex * environment.board.grid(action.yIndex).size) + action.xIndex
+        val fromCell = environment.board.grid(action.yIndex)(action.xIndex)
+        val fromCellType = LedgeCellType(fromCell.cellType) match {
+          case LedgeCellType.Copper => "copper"
+          case LedgeCellType.Gold => "gold"
+        }
+        val actionString = if (action.xIndex == 0 && action.yIndex == 0) {
+          f"removes ${fromCellType} from cell ${fromCellIndex}"
+        } else {
+          f"moves ${fromCellType} from cell ${fromCellIndex} to cell ${action.actionId}"
+        }
+        println(f"P${playerType.id} ${actionString}: [${environment.toString}]")
+    }
+
+    if (nextEnvironment.possibleActions.isEmpty && !paused) {
+      println(f"P${playerType.id} wins")
+    }
+  }
+
   def train(): Unit = {
     val environment = initialEnvironment
     for {
       episode <- 1 to Arguments.epochs
     } yield {
-      println(f"Episode $episode/${Arguments.epochs}")
-      trainBatch(environment)
+      trainBatch(environment, episode)
     }
   }
 
-  def trainBatch(environment: Environment): Unit = {
+  def trainBatch(environment: Environment, episode: Int): Unit = {
     val startingPlayer = getStartingPlayerType
 
     val batchHistory = for {
-      episode <- (1 to Arguments.batchSize).toList
+      _ <- (1 to Arguments.batchSize).toList
     } yield {
-      println(f"Game $episode/${Arguments.batchSize}")
       playGame(environment, playerType = startingPlayer)
     }
 
-    agent = agent.trainBatch(batchHistory)
+    val winCount = batchHistory.count(memories => memories.last.playerType == PlayerType.Player1)
+    println(f"Episode $episode/${Arguments.epochs} - Wins: ${winCount}/${batchHistory.size} (${((winCount.toDouble / batchHistory.size.toDouble) * 100).round}%%)")
+
+//    agent = agent.trainBatch(batchHistory)
   }
 
   def getStartingPlayerType: PlayerType = Arguments.startingPlayerType match {
@@ -147,21 +149,14 @@ class Controller(pane: Pane,
     case startingPlayerType => startingPlayerType
   }
 
-  def getNextPlayerType(playerType: PlayerType): PlayerType = {
-    playerType match {
-      case PlayerType.Player1 => PlayerType.Player2
-      case PlayerType.Player2 => PlayerType.Player1
-    }
-  }
-
   def getAction(environment: Environment, playerType: PlayerType): Action = {
     playerType match {
-      case PlayerType.Player1 => agent.randomAction(environment)
+      case PlayerType.Player1 => agent.act(environment)
       case PlayerType.Player2 => agent.randomAction(environment)
     }
   }
 
-  def playGame(environment: Environment, playerType: PlayerType, memories: List[Memory] = List()): List[Memory] = {
+  def playGame(environment: Environment, playerType: PlayerType, memories: List[AdverserialMemory] = List()): List[AdverserialMemory] = {
     if (environment.possibleActions.isEmpty) {
       memories
     } else {
@@ -171,7 +166,7 @@ class Controller(pane: Pane,
       val memory          = AdverserialMemory(environment, action, nextEnvironment, playerType)
       val nextMemories    = memories :+ memory
 
-      val nextPlayerType = getNextPlayerType(playerType)
+      val nextPlayerType = PlayerType.getNextPlayerType(playerType)
       playGame(nextEnvironment, playerType = nextPlayerType, memories = nextMemories)
     }
   }

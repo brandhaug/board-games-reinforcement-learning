@@ -2,4 +2,4 @@ package applications.actorcritic.agent
 
 import environment.Action
 
-case class ActionReward (action: Action, reward: Double = 0)
+case class ActionValuePair(action: Action, value: Double = 0)

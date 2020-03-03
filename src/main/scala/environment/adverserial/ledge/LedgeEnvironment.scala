@@ -94,5 +94,5 @@ case class LedgeEnvironment(board: Board) extends Environment {
     }
   }
 
-  override def toString: String = board.grid.flatten.map(_.toString).mkString(" ")
+  override def toString: String = board.grid.flatten.map(_.toString).mkString("")
 }

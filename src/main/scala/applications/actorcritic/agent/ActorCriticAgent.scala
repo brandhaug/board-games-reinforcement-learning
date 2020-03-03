@@ -6,18 +6,18 @@ import environment.{Action, Environment, Memory}
 import scala.util.Random
 
 trait ActorCriticAgent extends Agent {
-  val stateActionRewardMap: Map[String, List[ActionReward]]
+  val stateActionValuePairMap: Map[String, List[ActionValuePair]]
   val epsilonRate: Double
   val actorEligibilities: Map[String, List[Double]]
   val criticEligibilities: Map[String, Double]
 
   def act(environment: Environment): Action = {
-    val stateActionRewardList = stateActionRewardMap.getOrElse(environment.toString, List.empty)
+    val stateActionRewardList = stateActionValuePairMap.getOrElse(environment.toString, List.empty)
 
     if (stateActionRewardList.isEmpty || Random.nextDouble() <= epsilonRate) {
       randomAction(environment)
     } else {
-      stateActionRewardList.maxBy(_.reward).action
+      stateActionRewardList.maxBy(_.value).action
     }
   }
 

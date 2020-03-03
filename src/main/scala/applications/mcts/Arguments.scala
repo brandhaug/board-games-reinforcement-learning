@@ -1,12 +1,19 @@
 package applications.mcts
 
+import applications.mcts.PlayerType.PlayerType
+
 object Arguments {
   // GUI
-  val stepDelay: Double = 2
+  val stepDelay: Double = 0.8
 
   // Game simulator
-  val startingPlayerType = PlayerType.Mixed
-  val epochs: Int = 100 // number of batches we want the agent to play
-  val batchSize = 64 // 100
-  val rollouts = 15
+  val startingPlayerType: PlayerType = PlayerType.Mixed
+
+  // Training
+  val epochs: Int    = 500 // number of batches we want the agent to run
+  val batchSize: Int = 64  // should be able to handle 100
+
+  // MCTS
+  val simulations: Int                   = 15
+  val upperConfidenceBoundWeight: Double = 1.0
 }

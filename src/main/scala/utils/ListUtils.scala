@@ -5,4 +5,9 @@ object ListUtils {
     if (xs.isEmpty) 0
     else xs.head + sumList(xs.tail)
   }
+
+  def sumList(xs: List[Double]): Double = {
+    if (xs.isEmpty) 0.0
+    else xs.head + sumList(xs.tail)
+  }
 }
