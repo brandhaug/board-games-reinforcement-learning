@@ -28,7 +28,7 @@ case class MonteCarloAgent(stateVisitMap: Map[String, Int] = Map(),
     val stateKey    = environment.toString
     val stateVisits = stateVisitMap.getOrElse(stateKey, 0)
 
-    if (environment.possibleActions.isEmpty) { // TODO: WHY
+    if (environment.possibleActions.isEmpty) {
       this
     } else if (parents.nonEmpty && stateVisits == 0) {
       val rolloutResult = rollout(environment)

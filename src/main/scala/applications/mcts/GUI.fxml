@@ -13,6 +13,7 @@
         <Label styleClass="title-label" text="Environment" textAlignment="CENTER" />
         <RadioButton fx:id="nimEnvironmentRadioButton" mnemonicParsing="false" onAction="#selectEnvironment" text="NIM" />
         <RadioButton fx:id="ledgeEnvironmentRadioButton" mnemonicParsing="false" onAction="#selectEnvironment" text="Ledge" />
+        <RadioButton fx:id="hexEnvironmentRadioButton" mnemonicParsing="false" onAction="#selectEnvironment" text="Hex" />
         <TextField fx:id="boardSizeInput" styleClass="text-field" promptText="Size" />
         <TextField fx:id="secondaryEnvironmentVariableInput" styleClass="text-field" />
         <Button fx:id="createEnvironmentButton" onAction="#selectEnvironment" styleClass="button" text="Create" />

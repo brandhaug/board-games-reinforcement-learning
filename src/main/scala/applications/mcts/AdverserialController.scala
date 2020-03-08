@@ -4,6 +4,7 @@ import agent.MonteCarloAgent
 import applications.mcts.PlayerType.PlayerType
 import baseagent.Agent
 import environment.adverserial.AdverserialMemory
+import environment.adverserial.hex.HexEnvironmentCreator
 import environment.adverserial.nim.NimEnvironmentCreator
 import environment.{Action, Environment, EnvironmentType}
 import environment.adverserial.ledge.{LedgeCellType, LedgeEnvironmentCreator}
@@ -24,6 +25,7 @@ class Controller(pane: Pane,
                  canvas: Canvas,
                  nimEnvironmentRadioButton: RadioButton,
                  ledgeEnvironmentRadioButton: RadioButton,
+                 hexEnvironmentRadioButton: RadioButton,
                  boardSizeInput: TextField,
                  secondaryEnvironmentVariableInput: TextField,
                  createEnvironmentButton: Button,
@@ -62,7 +64,7 @@ class Controller(pane: Pane,
     var environment = initialEnvironment
 
     environment.environmentType match {
-      case EnvironmentType.Nim => println(f"Starting pile: ${environment.nonEmptyCells} stones")
+      case EnvironmentType.Nim   => println(f"Starting pile: ${environment.nonEmptyCells} stones")
       case EnvironmentType.Ledge => println(f"Start board: [${environment.toString}]")
     }
 
@@ -81,7 +83,7 @@ class Controller(pane: Pane,
               val action = getAction(environment, playerType)
 
               val nextEnvironment = environment.step(action)
-              val nextPlayerType = PlayerType.getNextPlayerType(playerType)
+              val nextPlayerType  = PlayerType.getNextPlayerType(playerType)
 
               printEnvironment(environment, action, playerType, nextEnvironment)
 
@@ -100,10 +102,10 @@ class Controller(pane: Pane,
         println(f"P${playerType.id} selects ${action.actionId} stones. Remaining stones = ${nextEnvironment.nonEmptyCells}")
       case EnvironmentType.Ledge =>
         val fromCellIndex = (action.yIndex * environment.board.grid(action.yIndex).size) + action.xIndex
-        val fromCell = environment.board.grid(action.yIndex)(action.xIndex)
+        val fromCell      = environment.board.grid(action.yIndex)(action.xIndex)
         val fromCellType = LedgeCellType(fromCell.cellType) match {
           case LedgeCellType.Copper => "copper"
-          case LedgeCellType.Gold => "gold"
+          case LedgeCellType.Gold   => "gold"
         }
         val actionString = if (action.xIndex == 0 && action.yIndex == 0) {
           f"removes ${fromCellType} from cell ${fromCellIndex}"
@@ -130,7 +132,7 @@ class Controller(pane: Pane,
     val batchHistory = for {
       _ <- (1 to Arguments.batchSize).toList
       startingPlayer = getStartingPlayerType
-      environment = initializeEnvironment()
+      environment    = initializeEnvironment()
     } yield {
       playGame(environment, playerType = startingPlayer)
     }
@@ -158,11 +160,11 @@ class Controller(pane: Pane,
     if (environment.possibleActions.isEmpty) {
       memories
     } else {
-      val action = getAction(environment, playerType)
+      val action          = getAction(environment, playerType)
       val nextEnvironment = environment.step(action)
       if (Arguments.verbose) printEnvironment(environment, action, playerType, nextEnvironment)
-      val memory          = AdverserialMemory(environment, action, nextEnvironment, playerType)
-      val nextMemories    = memories :+ memory
+      val memory       = AdverserialMemory(environment, action, nextEnvironment, playerType)
+      val nextMemories = memories :+ memory
 
       val nextPlayerType = PlayerType.getNextPlayerType(playerType)
       playGame(nextEnvironment, playerType = nextPlayerType, memories = nextMemories)
@@ -197,9 +199,17 @@ class Controller(pane: Pane,
 
     if (nimEnvironmentRadioButton.selected()) {
       initializeNimEnvironment(size, maxTake = secondaryEnvironmentVariable)
-    } else {
+    } else if (ledgeEnvironmentRadioButton.selected()) {
       initializeLedgeEnvironment(size, copperCount = secondaryEnvironmentVariable)
+    } else if (hexEnvironmentRadioButton.selected()) {
+      initializeHexEnvironment(size)
+    } else {
+      throw new Error("Unknown environment selected")
     }
+  }
+
+  def initializeHexEnvironment(size: Int): Environment = {
+    HexEnvironmentCreator.createEnvironment(size)
   }
 
   def initializeNimEnvironment(size: Int, maxTake: Int): Environment = {
@@ -221,6 +231,7 @@ class Controller(pane: Pane,
   def initializeEnvironmentToggleGroup(): Unit = {
     nimEnvironmentRadioButton.setToggleGroup(environmentToggleGroup)
     ledgeEnvironmentRadioButton.setToggleGroup(environmentToggleGroup)
+    hexEnvironmentRadioButton.setToggleGroup(environmentToggleGroup)
     nimEnvironmentRadioButton.setSelected(true)
   }
 
@@ -253,6 +264,12 @@ class Controller(pane: Pane,
   }
 
   def selectEnvironment(): Unit = {
+    if (hexEnvironmentRadioButton.selected()) {
+      secondaryEnvironmentVariableInput.setVisible(false)
+    } else {
+      secondaryEnvironmentVariableInput.setVisible(true)
+    }
+
     hardReset()
   }
 

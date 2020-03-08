@@ -9,4 +9,5 @@ object EnvironmentType extends Enumeration {
   // MCTS
   val Nim: EnvironmentType.Value = Value(1)
   val Ledge: EnvironmentType.Value = Value(2)
+  val Hex: EnvironmentType.Value = Value(3)
 }
