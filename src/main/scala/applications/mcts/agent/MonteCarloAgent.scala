@@ -9,14 +9,14 @@ case class MonteCarloAgent(stateVisitMap: Map[String, Int] = Map(),
                            stateValueMap: Map[String, Double] = Map()) extends Agent {
 
   def act(environment: Environment): Action = {
-    simulate(environment)
+    val rootVisits = stateVisitMap.getOrElse(environment.toString, 0)
+    selectAction(environment, PlayerType.Player1, rootVisits)
   }
 
   @scala.annotation.tailrec
-  private def simulate(environment: Environment, simulationsLeft: Int = Arguments.simulations): Action = {
+  final def simulate(environment: Environment, simulationsLeft: Int = Arguments.simulations): MonteCarloAgent = {
     if (simulationsLeft == 0) {
-      val rootVisits = stateVisitMap.getOrElse(environment.toString, 0)
-      selectAction(environment, PlayerType.Player1, rootVisits)
+      this
     } else {
       val newAgent = traverse(environment)
       newAgent.simulate(environment, simulationsLeft - 1)

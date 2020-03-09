@@ -44,7 +44,7 @@ class Controller(pane: Pane,
   var timeline: Timeline              = _
   var initialEnvironment: Environment = _
 
-  var agent: Agent = _
+  var agent: MonteCarloAgent = _
 
   // States
   var paused = true
@@ -129,6 +129,8 @@ class Controller(pane: Pane,
   }
 
   def trainBatch(epoch: Int): Unit = {
+    agent = initializeAgent()
+
     val batchHistory = for {
       _ <- (1 to Arguments.batchSize).toList
       startingPlayer = getStartingPlayerType
@@ -151,7 +153,10 @@ class Controller(pane: Pane,
 
   def getAction(environment: Environment, playerType: PlayerType): Action = {
     playerType match {
-      case PlayerType.Player1 => agent.act(environment)
+      case PlayerType.Player1 => {
+        agent = agent.simulate(environment)
+        agent.act(environment)
+      }
       case PlayerType.Player2 => agent.randomAction(environment)
     }
   }
@@ -247,7 +252,7 @@ class Controller(pane: Pane,
     }
   }
 
-  def initializeAgent(): Agent = {
+  def initializeAgent(): MonteCarloAgent = {
     MonteCarloAgent()
   }
 
