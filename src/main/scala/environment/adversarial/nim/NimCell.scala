@@ -1,7 +1,7 @@
-package environment.adverserial.nim
+package environment.adversarial.nim
 
 import environment.BoardType.BoardType
-import environment.adverserial.nim.NimCellType.NimCellType
+import environment.adversarial.nim.NimCellType.NimCellType
 import environment.{BoardType, Cell}
 import scalafx.scene.paint.Color
 

@@ -1,7 +1,7 @@
-package environment.adverserial.ledge
+package environment.adversarial.ledge
 
 import environment.BoardType.BoardType
-import environment.adverserial.ledge.LedgeCellType.LedgeCellType
+import environment.adversarial.ledge.LedgeCellType.LedgeCellType
 import environment.{BoardType, Cell}
 import scalafx.scene.paint.Color
 

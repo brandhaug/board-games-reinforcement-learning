@@ -1,11 +1,11 @@
-package environment.adverserial.nim
+package environment.adversarial.nim
 
 import environment.EnvironmentType.EnvironmentType
 import environment.{Action, Board, Cell, Environment, EnvironmentType}
 
 case class NimEnvironment(board: Board, maxTake: Int) extends Environment {
   val environmentType: EnvironmentType = EnvironmentType.Nim
-  val reward: Double = if (nonEmptyCells == 0) 100 else 0
+  val reward: Double = if (nonEmptyCells == 0) 1.0 else 0.0
   val possibleActions: List[Action] = {
     val limit = if (nonEmptyCells > maxTake) maxTake else nonEmptyCells
     (1 to limit).toList.map(take => NimAction(0, 0, take))

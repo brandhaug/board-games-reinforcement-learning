@@ -3,7 +3,7 @@ package applications.actorcritic
 import environment.EnvironmentType
 import environment.EnvironmentType.EnvironmentType
 
-object Arguments {
+object SoloArguments {
   // 1. General
   val mapsDirectoryName: String = "boards"
 

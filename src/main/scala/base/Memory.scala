@@ -1,4 +1,6 @@
-package environment
+package base
+
+import environment.{Action, Environment}
 
 trait Memory {
   val environment: Environment

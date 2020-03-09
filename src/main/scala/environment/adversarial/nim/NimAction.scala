@@ -1,4 +1,4 @@
-package environment.adverserial.nim
+package environment.adversarial.nim
 
 import environment.Action
 

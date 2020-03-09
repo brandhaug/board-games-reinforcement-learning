@@ -1,4 +1,4 @@
-package environment.adverserial.hex
+package environment.adversarial.hex
 
 object HexEnvironmentCreator {
 

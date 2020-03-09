@@ -10,10 +10,10 @@ import scalafx.scene.Scene
 import scalafxml.core.{FXMLView, NoDependencyResolver}
 import scalafx.Includes._
 
-object Main extends JFXApp {
-  val resource: URL = getClass.getResource("GUI.fxml")
+object SoloMain extends JFXApp {
+  val resource: URL = getClass.getResource("SoloGUI.fxml")
   if (resource == null) {
-    throw new IOException("Cannot load resource: GUI.fxml")
+    throw new IOException("Cannot load resource: SoloGUI.fxml")
   }
 
   val root: Parent = FXMLView(resource, NoDependencyResolver)

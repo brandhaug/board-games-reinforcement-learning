@@ -1,4 +1,4 @@
-package environment.adverserial.hex
+package environment.adversarial.hex
 
 import environment.BoardType.BoardType
 import environment.{Board, BoardType, Cell}

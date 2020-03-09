@@ -10,10 +10,10 @@ import scalafx.application.JFXApp.PrimaryStage
 import scalafx.scene.Scene
 import scalafxml.core.{FXMLView, NoDependencyResolver}
 
-object Main extends JFXApp {
-  val resource: URL = getClass.getResource("GUI.fxml")
+object AdversarialMain extends JFXApp {
+  val resource: URL = getClass.getResource("AdversarialGUI.fxml")
   if (resource == null) {
-    throw new IOException("Cannot load resource: GUI.fxml")
+    throw new IOException("Cannot load resource: AdversarialGUI.fxml")
   }
 
   val root: Parent = FXMLView(resource, NoDependencyResolver)

@@ -1,6 +1,6 @@
 package applications.actorcritic.agent
 
-import applications.actorcritic.Arguments
+import applications.actorcritic.SoloArguments
 import environment.{Cell, Environment}
 import org.deeplearning4j.nn.api.OptimizationAlgorithm
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration
@@ -25,10 +25,10 @@ case class StateValueNetwork(initialEnvironment: Environment) {
     val builder = new NeuralNetConfiguration.Builder()
       .weightInit(WeightInit.XAVIER)
       .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-      .updater(new Sgd(Arguments.networkCriticLearningRate))
+      .updater(new Sgd(SoloArguments.networkCriticLearningRate))
       .list()
 
-    for (dimension <- Arguments.criticNeuralNetworkDimensions) {
+    for (dimension <- SoloArguments.criticNeuralNetworkDimensions) {
       builder.layer(
         new DenseLayer.Builder()
           .nOut(dimension)

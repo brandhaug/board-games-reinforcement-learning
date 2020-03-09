@@ -2,12 +2,12 @@ package applications.mcts
 
 import agent.MonteCarloAgent
 import applications.mcts.PlayerType.PlayerType
-import baseagent.Agent
-import environment.adverserial.AdverserialMemory
-import environment.adverserial.hex.HexEnvironmentCreator
-import environment.adverserial.nim.NimEnvironmentCreator
+import base.Agent
+import environment.adversarial.AdversarialMemory
+import environment.adversarial.hex.HexEnvironmentCreator
+import environment.adversarial.nim.NimEnvironmentCreator
 import environment.{Action, Environment, EnvironmentType}
-import environment.adverserial.ledge.{LedgeCellType, LedgeEnvironmentCreator}
+import environment.adversarial.ledge.{LedgeCellType, LedgeEnvironmentCreator}
 import scalafx.Includes._
 import scalafx.animation.{KeyFrame, Timeline}
 import scalafx.scene.canvas.{Canvas, GraphicsContext}
@@ -21,18 +21,18 @@ import utils.StringUtils
 import scala.util.Random
 
 @sfxml
-class Controller(pane: Pane,
-                 canvas: Canvas,
-                 nimEnvironmentRadioButton: RadioButton,
-                 ledgeEnvironmentRadioButton: RadioButton,
-                 hexEnvironmentRadioButton: RadioButton,
-                 boardSizeInput: TextField,
-                 secondaryEnvironmentVariableInput: TextField,
-                 createEnvironmentButton: Button,
-                 trainButton: Button,
-                 startButton: Button,
-                 resetButton: Button,
-                 hardResetButton: Button) {
+class AdversarialController(pane: Pane,
+                            canvas: Canvas,
+                            nimEnvironmentRadioButton: RadioButton,
+                            ledgeEnvironmentRadioButton: RadioButton,
+                            hexEnvironmentRadioButton: RadioButton,
+                            boardSizeInput: TextField,
+                            secondaryEnvironmentVariableInput: TextField,
+                            createEnvironmentButton: Button,
+                            trainButton: Button,
+                            startButton: Button,
+                            resetButton: Button,
+                            hardResetButton: Button) {
 
   // Environment toggle group
   val environmentToggleGroup = new ToggleGroup()
@@ -54,8 +54,9 @@ class Controller(pane: Pane,
   def initialize(hardReset: Boolean = true): Unit = {
     if (hardReset) {
       initialEnvironment = initializeEnvironment()
-      agent = initializeAgent()
     }
+
+    agent = initializeAgent()
 
     resetGui()
 
@@ -75,13 +76,12 @@ class Controller(pane: Pane,
 
       keyFrames = Seq(
         KeyFrame(
-          Arguments.stepDelay s,
+          AdversarialArguments.stepDelay s,
           onFinished = () => {
             if (environment.possibleActions.isEmpty && !paused) {
               toggleStart()
             } else {
-              val action = getAction(environment, playerType)
-
+              val action          = getAction(environment, playerType)
               val nextEnvironment = environment.step(action)
               val nextPlayerType  = PlayerType.getNextPlayerType(playerType)
 
@@ -122,53 +122,54 @@ class Controller(pane: Pane,
 
   def train(): Unit = {
     for {
-      epoch <- 1 to Arguments.epochs
+      epoch <- 1 to AdversarialArguments.epochs
     } yield {
       trainBatch(epoch)
     }
   }
 
   def trainBatch(epoch: Int): Unit = {
-    agent = initializeAgent()
-
     val batchHistory = for {
-      _ <- (1 to Arguments.batchSize).toList
+      _ <- (1 to AdversarialArguments.batchSize).toList
       startingPlayer = getStartingPlayerType
       environment    = initializeEnvironment()
     } yield {
+      agent = initializeAgent()
       playGame(environment, playerType = startingPlayer)
     }
 
     val winCount = batchHistory.count(memories => memories.last.playerType == PlayerType.Player1)
-    println(f"Epoch $epoch/${Arguments.epochs} - Wins: ${winCount}/${batchHistory.size} (${((winCount.toDouble / batchHistory.size.toDouble) * 100).round}%%)")
+    println(f"Epoch $epoch/${AdversarialArguments.epochs} - Wins: ${winCount}/${batchHistory.size} (${((winCount.toDouble / batchHistory.size.toDouble) * 100).round}%%)")
   }
 
-  def getStartingPlayerType: PlayerType = Arguments.startingPlayerType match {
+  def getStartingPlayerType: PlayerType = AdversarialArguments.startingPlayerType match {
     case PlayerType.Mixed =>
       val random = Random.nextDouble
-      if (random >= 0.5) PlayerType.Player1
-      else PlayerType.Player2
+      if (random >= 0.5) PlayerType.Player1 else PlayerType.Player2
     case startingPlayerType => startingPlayerType
   }
 
   def getAction(environment: Environment, playerType: PlayerType): Action = {
     playerType match {
-      case PlayerType.Player1 => {
-        agent = agent.simulate(environment)
-        agent.act(environment)
-      }
-      case PlayerType.Player2 => agent.randomAction(environment)
+      case PlayerType.Player1 =>
+        agent = agent.iterate(environment, playerType)
+        agent.act(environment, playerType)
+//        agent.randomAction(environment)
+      case PlayerType.Player2 =>
+        agent = agent.iterate(environment, playerType)
+        agent.act(environment, playerType)
+//        agent.randomAction(environment)
     }
   }
 
-  def playGame(environment: Environment, playerType: PlayerType, memories: List[AdverserialMemory] = List()): List[AdverserialMemory] = {
+  def playGame(environment: Environment, playerType: PlayerType, memories: List[AdversarialMemory] = List()): List[AdversarialMemory] = {
     if (environment.possibleActions.isEmpty) {
       memories
     } else {
       val action          = getAction(environment, playerType)
       val nextEnvironment = environment.step(action)
-      if (Arguments.verbose) printEnvironment(environment, action, playerType, nextEnvironment)
-      val memory       = AdverserialMemory(environment, action, nextEnvironment, playerType)
+      if (AdversarialArguments.verbose) printEnvironment(environment, action, playerType, nextEnvironment)
+      val memory       = AdversarialMemory(environment, action, nextEnvironment, playerType)
       val nextMemories = memories :+ memory
 
       val nextPlayerType = PlayerType.getNextPlayerType(playerType)

@@ -1,4 +1,4 @@
-package environment.adverserial.nim
+package environment.adversarial.nim
 
 import environment.{Board, BoardType, Cell}
 import environment.BoardType.BoardType

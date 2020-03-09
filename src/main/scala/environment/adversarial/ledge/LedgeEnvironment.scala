@@ -1,4 +1,4 @@
-package environment.adverserial.ledge
+package environment.adversarial.ledge
 
 import environment.EnvironmentType.EnvironmentType
 import environment.{Action, Board, Cell, Environment, EnvironmentType}
@@ -9,7 +9,7 @@ case class LedgeEnvironment(board: Board) extends Environment {
   val environmentType: EnvironmentType = EnvironmentType.Ledge
   val goldExists: Boolean = board.grid.flatten.exists(_.cellType == LedgeCellType.Gold.id)
   val reward: Double = {
-    if (goldExists) 0 else 100
+    if (goldExists) 0.0 else 1.0
   }
   val possibleActions: List[Action] = {
     if (!goldExists) {

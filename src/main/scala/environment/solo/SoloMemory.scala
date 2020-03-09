@@ -1,5 +1,6 @@
 package environment.solo
 
-import environment.{Action, Environment, Memory}
+import base.Memory
+import environment.{Action, Environment}
 
 case class SoloMemory(environment: Environment, action: Action, nextEnvironment: Environment) extends Memory

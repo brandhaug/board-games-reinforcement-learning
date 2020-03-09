@@ -1,7 +1,8 @@
 package applications.actorcritic.agent
 
-import environment.{Environment, Memory}
-import applications.actorcritic.Arguments._
+import environment.Environment
+import applications.actorcritic.SoloArguments._
+import base.Memory
 
 import scala.util.Random
 

@@ -1,7 +1,7 @@
-package environment.adverserial.hex
+package environment.adversarial.hex
 
 import environment.BoardType.BoardType
-import environment.adverserial.hex.HexCellType.HexCellType
+import environment.adversarial.hex.HexCellType.HexCellType
 import environment.{BoardType, Cell}
 import scalafx.scene.paint.Color
 

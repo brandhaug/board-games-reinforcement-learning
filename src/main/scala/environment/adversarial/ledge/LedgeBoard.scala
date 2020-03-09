@@ -1,4 +1,4 @@
-package environment.adverserial.ledge
+package environment.adversarial.ledge
 
 import environment.{Board, BoardType, Cell}
 import environment.BoardType.BoardType

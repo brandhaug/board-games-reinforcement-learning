@@ -21,24 +21,24 @@ import scalafx.scene.paint.Color
 import utils.StringUtils
 
 @sfxml
-class Controller(pane: Pane,
-                 canvas: Canvas,
-                 fileEnvironmentRadioButton: RadioButton,
-                 customEnvironmentRadioButton: RadioButton,
-                 fileComboBox: ComboBox[String],
-                 customBoardTypeComboBox: ComboBox[BoardType],
-                 customBoardSizeInput: TextField,
-                 createCustomEnvironmentButton: Button,
-                 tableLookupRadioButton: RadioButton,
-                 neuralNetworkRadioButton: RadioButton,
-                 infoLabel: Label,
-                 trainButton: Button,
-                 startButton: Button,
-                 resetButton: Button,
-                 hardResetButton: Button,
-                 showChartButton: Button) {
+class SoloController(pane: Pane,
+                     canvas: Canvas,
+                     fileEnvironmentRadioButton: RadioButton,
+                     customEnvironmentRadioButton: RadioButton,
+                     fileComboBox: ComboBox[String],
+                     customBoardTypeComboBox: ComboBox[BoardType],
+                     customBoardSizeInput: TextField,
+                     createCustomEnvironmentButton: Button,
+                     tableLookupRadioButton: RadioButton,
+                     neuralNetworkRadioButton: RadioButton,
+                     infoLabel: Label,
+                     trainButton: Button,
+                     startButton: Button,
+                     resetButton: Button,
+                     hardResetButton: Button,
+                     showChartButton: Button) {
   // Selected file
-  val files: List[File]       = listFiles(Arguments.mapsDirectoryName)
+  val files: List[File]       = listFiles(SoloArguments.mapsDirectoryName)
   val fileNames: List[String] = files.map(file => file.getName).sorted
 
   // Agent toggle group
@@ -58,7 +58,7 @@ class Controller(pane: Pane,
 
   // Global variables
   var timeline: Timeline              = _
-  var agent: ActorCriticAgent                    = _
+  var agent: ActorCriticAgent         = _
   var initialEnvironment: Environment = _
   var pegsLeftHistory: List[Int]      = _
 
@@ -84,12 +84,12 @@ class Controller(pane: Pane,
       cycleCount = Timeline.Indefinite
       keyFrames = Seq(
         KeyFrame(
-          Arguments.stepDelay s,
+          SoloArguments.stepDelay s,
           onFinished = () => {
             if (environment.possibleActions.isEmpty && !paused) {
               toggleStart()
             } else {
-              val action          = agent.act(environment)
+              val action = agent.act(environment)
               println(action.toString)
               val nextEnvironment = environment.step(action)
               environment = nextEnvironment
@@ -103,9 +103,9 @@ class Controller(pane: Pane,
   def train(): Unit = {
     val environment = initialEnvironment
     pegsLeftHistory = (for {
-      episode <- 1 to Arguments.episodes
+      episode <- 1 to SoloArguments.episodes
       memories = playEpisode(environment)
-      _        = if (memories.nonEmpty) println(f"Training: $episode / ${Arguments.episodes}, Reward: ${memories.last.nextEnvironment.reward}, ${agent.toString}")
+      _        = if (memories.nonEmpty) println(f"Training: $episode / ${SoloArguments.episodes}, Reward: ${memories.last.nextEnvironment.reward}, ${agent.toString}")
       _        = updateRates()
     } yield {
       if (memories.isEmpty) {
@@ -130,7 +130,7 @@ class Controller(pane: Pane,
       val action          = agent.act(environment)
       val nextEnvironment = environment.step(action)
       val memory          = SoloMemory(environment, action, nextEnvironment)
-      val nextMemories = memories :+ memory
+      val nextMemories    = memories :+ memory
       agent = agent.train(nextMemories)
       playEpisode(nextEnvironment, nextMemories)
     }
@@ -176,7 +176,7 @@ class Controller(pane: Pane,
     }
     val selectedFile = files.find(file => file.getName == selectedFileName).get
 
-    Arguments.environmentType match {
+    SoloArguments.environmentType match {
       case EnvironmentType.PegSolitaire => PegEnvironmentCreator.createEnvironmentFromFile(selectedFile)
       case _                            => throw new Exception("Unknown EnvironmentType")
     }
@@ -187,7 +187,7 @@ class Controller(pane: Pane,
     val defaultBoardSize = 5
     val boardType        = customBoardTypeComboBox.getValue
     val boardSize        = if (inputValue.nonEmpty && StringUtils.isNumeric(inputValue)) inputValue.toInt else defaultBoardSize
-    Arguments.environmentType match {
+    SoloArguments.environmentType match {
       case EnvironmentType.PegSolitaire => PegEnvironmentCreator.createEnvironment(boardType, boardSize)
       case _                            => throw new Exception("Unknown EnvironmentType")
     }
@@ -196,11 +196,11 @@ class Controller(pane: Pane,
 
   def initializeAgent(environment: Environment): ActorCriticAgent = {
     selectedAgentType() match {
-      case ActorCriticAgentType.TableLookup   => TableActorCriticAgent(environment)
+      case ActorCriticAgentType.TableLookup => TableActorCriticAgent(environment)
       case ActorCriticAgentType.NeuralNetwork =>
         val stateValueNetwork = StateValueNetwork(environment)
         NetworkActorCriticAgent(environment, stateValueNetwork = stateValueNetwork)
-      case _                       => throw new Exception("Unknown applications.actorcritic.agent")
+      case _ => throw new Exception("Unknown applications.actorcritic.agent")
     }
   }
 
