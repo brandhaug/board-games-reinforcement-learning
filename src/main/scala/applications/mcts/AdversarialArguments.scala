@@ -7,7 +7,7 @@ object AdversarialArguments {
   val stepDelay: Double = 0.8
 
   // Game simulator
-  val startingPlayerType: PlayerType = PlayerType.Player1
+  val startingPlayerType: PlayerType = PlayerType.Mixed
   val verbose: Boolean               = false
 
   // Training
