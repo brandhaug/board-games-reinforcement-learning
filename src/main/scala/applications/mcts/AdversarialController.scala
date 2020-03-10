@@ -64,10 +64,7 @@ class AdversarialController(pane: Pane,
 
     var environment = initialEnvironment
 
-    environment.environmentType match {
-      case EnvironmentType.Nim   => println(f"Starting pile: ${environment.nonEmptyCells} stones")
-      case EnvironmentType.Ledge => println(f"Start board: [${environment.toString}]")
-    }
+    printEnvironmentStart(environment)
 
     var playerType = getStartingPlayerType
 
@@ -96,6 +93,13 @@ class AdversarialController(pane: Pane,
     }
   }
 
+  def printEnvironmentStart(environment: Environment): Unit = {
+    environment.environmentType match {
+      case EnvironmentType.Nim   => println(f"Starting pile: ${environment.nonEmptyCells} stones")
+      case EnvironmentType.Ledge => println(f"Start board: [${environment.toString}]")
+    }
+  }
+
   def printEnvironment(environment: Environment, action: Action, playerType: PlayerType, nextEnvironment: Environment): Unit = {
     environment.environmentType match {
       case EnvironmentType.Nim =>
@@ -112,7 +116,7 @@ class AdversarialController(pane: Pane,
         } else {
           f"moves ${fromCellType} from cell ${fromCellIndex} to cell ${action.actionId}"
         }
-        println(f"P${playerType.id} ${actionString}: [${environment.toString}]")
+        println(f"P${playerType.id} ${actionString}: [${nextEnvironment.toString}]")
     }
 
     if (nextEnvironment.possibleActions.isEmpty && !paused) {
@@ -132,10 +136,11 @@ class AdversarialController(pane: Pane,
     val batchHistory = for {
       _ <- (1 to AdversarialArguments.batchSize).toList
       startingPlayer = getStartingPlayerType
-      environment    = initializeEnvironment()
+      environment    = initialEnvironment
     } yield {
       agent = initializeAgent()
-      playGame(environment, playerType = startingPlayer)
+      if (AdversarialArguments.verbose) printEnvironmentStart(environment)
+      playGame(environment, startingPlayer)
     }
 
     val winCount = batchHistory.count(memories => memories.last.playerType == PlayerType.Player1)

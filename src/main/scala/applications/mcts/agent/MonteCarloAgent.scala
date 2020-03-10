@@ -13,102 +13,99 @@ case class MonteCarloAgent(stateVisitMap: Map[String, Int] = Map(), stateValueMa
   }
 
   @scala.annotation.tailrec
-  final def iterate(environment: Environment, playerType: PlayerType, simulationsLeft: Int = AdversarialArguments.iterations): MonteCarloAgent = {
-    if (simulationsLeft == 0) {
+  final def iterate(environment: Environment, playerType: PlayerType, iterationsLeft: Int = AdversarialArguments.iterations): MonteCarloAgent = {
+    if (iterationsLeft == 0) {
       this
     } else {
       val newAgent = traverse(environment, playerType)
-      newAgent.iterate(environment, playerType, simulationsLeft - 1)
+      newAgent.iterate(environment, playerType, iterationsLeft - 1)
     }
   }
 
   @scala.annotation.tailrec
-  private def traverse(environment: Environment, playerType: PlayerType, parents: List[Environment] = List.empty): MonteCarloAgent = {
+  private def traverse(environment: Environment, playerType: PlayerType, visitedStates: List[Environment] = List.empty): MonteCarloAgent = {
     val stateKey    = environment.toString
     val stateVisits = stateVisitMap.getOrElse(stateKey, 0)
 
-    if (parents.nonEmpty && stateVisits == 0) {
+    if (visitedStates.nonEmpty && stateVisits == 0) {
       // Rollout
-      val reward = rollout(environment, playerType)
-      backpropagate(reward, parents :+ environment)
+      val rolloutResult = rollout(environment, playerType)
+      backpropagate(rolloutResult.reward, rolloutResult.playerType, rolloutResult.playerType, visitedStates :+ environment)
     } else {
       // Select/Expand
-      val rootKey         = if (parents.isEmpty) environment.toString else parents.head.toString
+      val rootKey         = if (visitedStates.isEmpty) environment.toString else visitedStates.head.toString
       val rootVisits      = stateVisitMap.getOrElse(rootKey, 0)
       val selectedAction  = selectAction(environment, playerType, rootVisits)
       val nextEnvironment = environment.step(selectedAction)
+      val nextPlayerType  = PlayerType.getNextPlayerType(playerType)
 
       if (nextEnvironment.isDone) {
-        val reward = calculateReward(nextEnvironment, playerType)
-        backpropagate(reward, parents :+ environment)
+        val reward = nextEnvironment.reward
+        backpropagate(reward, nextPlayerType, playerType, visitedStates :+ environment)
       } else {
-        val nextPlayerType = PlayerType.getNextPlayerType(playerType)
-        traverse(nextEnvironment, nextPlayerType, parents = parents :+ environment)
+
+        traverse(nextEnvironment, nextPlayerType, visitedStates = visitedStates :+ environment)
       }
     }
   }
 
   @scala.annotation.tailrec
-  private def backpropagate(result: Double, environments: List[Environment]): MonteCarloAgent = {
-    if (environments.isEmpty) {
+  private def backpropagate(result: Double, winningPlayerType: PlayerType, playerType: PlayerType, visitedStates: List[Environment]): MonteCarloAgent = {
+    if (visitedStates.isEmpty) {
       this
     } else {
-      val environment = environments.last
+      val environment = visitedStates.last
 
       val stateKey    = environment.toString
       val stateVisits = stateVisitMap.getOrElse(stateKey, 0)
       val stateValue  = stateValueMap.getOrElse(stateKey, 0.0)
 
-      val newStateValue    = stateValue + result
+      val newStateValue    = if (playerType == winningPlayerType) stateValue + result else stateValue - result
       val newStateVisitMap = stateVisitMap + (stateKey -> (stateVisits + 1))
       val newStateValueMap = stateValueMap + (stateKey -> newStateValue)
 
-      val newAgent = MonteCarloAgent(newStateVisitMap, newStateValueMap)
-
-      newAgent.backpropagate(result, environments.dropRight(1))
+      val newAgent       = MonteCarloAgent(newStateVisitMap, newStateValueMap)
+      val nextPlayerType = PlayerType.getNextPlayerType(playerType)
+      newAgent.backpropagate(result, winningPlayerType, nextPlayerType, visitedStates.dropRight(1))
     }
   }
 
   @scala.annotation.tailrec
-  private def rollout(environment: Environment, playerType: PlayerType): Double = {
+  private def rollout(environment: Environment, playerType: PlayerType): RolloutResult = {
     val selectedAction  = randomAction(environment)
     val nextEnvironment = environment.step(selectedAction)
+    val nextPlayerType  = PlayerType.getNextPlayerType(playerType)
 
     if (nextEnvironment.isDone) {
-      calculateReward(nextEnvironment, playerType)
+      RolloutResult(nextPlayerType, nextEnvironment.reward)
     } else {
-      val nextPlayerType = PlayerType.getNextPlayerType(playerType)
       rollout(nextEnvironment, nextPlayerType)
     }
-  }
-
-  private def calculateReward(environment: Environment, playerType: PlayerType.PlayerType): Double = {
-    if (playerType == PlayerType.Player1) environment.reward else -environment.reward
   }
 
   private def selectAction(environment: Environment, playerType: PlayerType, rootVisits: Int): Action = {
     playerType match {
       case PlayerType.Player1 =>
         environment.possibleActions.maxBy(action => {
-          val nextEnvironment      = environment.step(action)
+          val nextEnvironment = environment.step(action)
 
           if (nextEnvironment.isDone) {
             Double.MaxValue
           } else {
-            val stateActionValue = getStateValue(nextEnvironment)
+            val stateActionValue     = getStateValue(nextEnvironment)
             val upperConfidenceBound = getUpperConfidenceBound(nextEnvironment, rootVisits)
 
             stateActionValue + upperConfidenceBound
           }
         })
       case PlayerType.Player2 =>
-        environment.possibleActions.minBy(action => {
-          val nextEnvironment      = environment.step(action)
+        environment.possibleActions.maxBy(action => {
+          val nextEnvironment = environment.step(action)
 
           if (nextEnvironment.isDone) {
-            Double.MinValue
+            Double.MaxValue
           } else {
-            val stateActionValue = getStateValue(nextEnvironment)
+            val stateActionValue     = getStateValue(nextEnvironment)
             val upperConfidenceBound = getUpperConfidenceBound(nextEnvironment, rootVisits)
 
             stateActionValue - upperConfidenceBound
@@ -129,5 +126,6 @@ case class MonteCarloAgent(stateVisitMap: Map[String, Int] = Map(), stateValueMa
     if (stateVisits == 0) 1000
     else AdversarialArguments.upperConfidenceBoundWeight * Math.sqrt(Math.log(rootVisits) / (1 + stateVisits).toDouble)
   }
-
 }
+
+case class RolloutResult(playerType: PlayerType, reward: Double)
