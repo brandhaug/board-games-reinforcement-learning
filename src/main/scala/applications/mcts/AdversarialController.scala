@@ -97,6 +97,7 @@ class AdversarialController(pane: Pane,
     environment.environmentType match {
       case EnvironmentType.Nim   => println(f"Starting pile: ${environment.nonEmptyCells} stones")
       case EnvironmentType.Ledge => println(f"Start board: [${environment.toString}]")
+      case EnvironmentType.Hex => println(f"Start board: ${environment.board.grid.flatten.size} cells")
     }
   }
 
@@ -117,6 +118,8 @@ class AdversarialController(pane: Pane,
           f"moves ${fromCellType} from cell ${fromCellIndex} to cell ${action.actionId}"
         }
         println(f"P${playerType.id} ${actionString}: [${nextEnvironment.toString}]")
+      case EnvironmentType.Hex =>
+        println(f"P${playerType.id} places piece in (${action.xIndex}, ${action.yIndex})")
     }
 
     if (nextEnvironment.possibleActions.isEmpty && !paused) {
