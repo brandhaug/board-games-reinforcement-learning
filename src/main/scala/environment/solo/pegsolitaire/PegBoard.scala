@@ -7,12 +7,12 @@ import scalafx.scene.canvas.GraphicsContext
 case class PegBoard(grid: List[List[PegCell]], boardType: BoardType) extends Board {
   override def render(gc: GraphicsContext): Unit = {
     for {
-      (line, yIndex) <- grid.zipWithIndex
-      (cell, xIndex) <- line.zipWithIndex
+      row  <- grid
+      cell <- row
       _ = cell.render(
         gc,
-        cellStartX(line, xIndex),
-        cellHeight * yIndex,
+        cellStartX(row, cell.xIndex),
+        cellHeight * cell.yIndex,
         cellWidth,
         cellHeight
       )
@@ -29,7 +29,7 @@ case class PegBoard(grid: List[List[PegCell]], boardType: BoardType) extends Boa
         val noneCells = line.count(_.isNone)
         baseStartX + (noneCells * (cellWidth / 2))
       case BoardType.Diamond => baseStartX
-      case _ => throw new Exception("Unknown BoardType")
+      case _                 => throw new Exception("Unknown BoardType")
     }
   }
 }

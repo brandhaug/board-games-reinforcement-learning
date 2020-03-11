@@ -3,8 +3,6 @@ package environment.adversarial.hex
 import environment.EnvironmentType.EnvironmentType
 import environment._
 
-import scala.collection.mutable
-
 case class HexEnvironment(board: HexBoard) extends Environment {
   val environmentType: EnvironmentType = EnvironmentType.Hex
 
@@ -29,9 +27,6 @@ case class HexEnvironment(board: HexBoard) extends Environment {
   }
 
   val reward: Double = {
-    if (redWins) println("Red wins")
-    else if (blueWins) println("Blue wins")
-
     if (redWins) 1.0
     else if (blueWins) -1.0
     else 0.0

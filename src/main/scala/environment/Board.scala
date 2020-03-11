@@ -22,15 +22,20 @@ trait Board {
 
   def render(gc: GraphicsContext): Unit = {
     for {
-      (line, yIndex) <- grid.zipWithIndex
-      (cell, xIndex) <- line.zipWithIndex
-      _ = cell.render(
-        gc,
-        cellWidth * xIndex,
-        cellHeight * yIndex,
-        cellWidth,
-        cellHeight
-      )
+      row  <- grid
+      cell <- row
+      _ = boardType match {
+        case BoardType.Hex =>
+          cell.render(gc, cellWidth, cellHeight, grid.head.size - 1, grid.size - 1)
+        case _ =>
+          cell.render(
+            gc,
+            cellWidth * cell.xIndex,
+            cellHeight * cell.yIndex,
+            cellWidth,
+            cellHeight
+          )
+      }
     } yield {
       ()
     }

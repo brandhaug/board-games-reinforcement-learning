@@ -27,9 +27,17 @@ trait Cell {
         gc.fillOval(startX, startY, width - 5, height)
       case BoardType.Diamond =>
         gc.fillOval(startX, startY, width - 5, height)
-      case BoardType.Hex =>
-        GraphicsUtils.fillHexagon(gc, xIndex, yIndex, width, height)
       case _ => throw new Exception("Unknown BoardType")
     }
   }
+  def render(gc: GraphicsContext, width: Double, height: Double, maxX: Int, maxY: Int): Unit = {
+    gc.setFill(color)
+    gc.setStroke(strokeColor)
+
+    boardType match {
+      case BoardType.Hex =>
+        GraphicsUtils.fillHexagon(gc, xIndex, yIndex, width, height, maxX, maxY)
+    }
+  }
+
 }
