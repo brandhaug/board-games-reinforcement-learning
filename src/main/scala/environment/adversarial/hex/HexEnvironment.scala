@@ -27,8 +27,7 @@ case class HexEnvironment(board: HexBoard) extends Environment {
   }
 
   val reward: Double = {
-    if (redWins) 1.0
-    else if (blueWins) -1.0
+    if (redWins || blueWins) 1.0
     else 0.0
   }
 
