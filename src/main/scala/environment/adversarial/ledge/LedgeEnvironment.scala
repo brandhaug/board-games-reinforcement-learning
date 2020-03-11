@@ -7,7 +7,7 @@ import scala.collection.mutable
 
 case class LedgeEnvironment(board: Board) extends Environment {
   val environmentType: EnvironmentType = EnvironmentType.Ledge
-  val goldExists: Boolean = board.grid.flatten.exists(_.cellType == LedgeCellType.Gold.id)
+  val goldExists: Boolean              = board.grid.flatten.exists(_.cellType == LedgeCellType.Gold.id)
   val reward: Double = {
     if (goldExists) 0.0 else 1.0
   }
@@ -84,7 +84,8 @@ case class LedgeEnvironment(board: Board) extends Environment {
     } yield {
       if (x > cellStartX && x < cellStartX + board.cellWidth && y > cellStartY && y < cellStartY + board.cellHeight) {
         LedgeCellType(cell.cellType) match {
-          case LedgeCellType.Copper => LedgeCell(cell.xIndex, cell.yIndex, LedgeCellType.Empty)
+          case LedgeCellType.Copper => LedgeCell(cell.xIndex, cell.yIndex, LedgeCellType.Gold)
+          case LedgeCellType.Gold   => LedgeCell(cell.xIndex, cell.yIndex, LedgeCellType.Empty)
           case LedgeCellType.Empty  => LedgeCell(cell.xIndex, cell.yIndex, LedgeCellType.Copper)
           case _                    => cell
         }

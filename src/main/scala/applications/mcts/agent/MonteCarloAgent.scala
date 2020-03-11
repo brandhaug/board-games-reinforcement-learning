@@ -37,12 +37,13 @@ case class MonteCarloAgent(stateVisitMap: Map[String, Int] = Map(), stateValueMa
       val rootVisits      = stateVisitMap.getOrElse(rootKey, 0)
       val selectedAction  = selectAction(environment, playerType, rootVisits)
       val nextEnvironment = environment.step(selectedAction)
+      val nextPlayerType  = PlayerType.getNextPlayerType(playerType)
 
       if (nextEnvironment.isDone) {
         val reward = nextEnvironment.reward
-        backpropagate(reward, playerType, playerType, visitedStates :+ environment)
+        backpropagate(reward, nextPlayerType, playerType, visitedStates :+ environment)
       } else {
-        val nextPlayerType = PlayerType.getNextPlayerType(playerType)
+
         traverse(nextEnvironment, nextPlayerType, visitedStates = visitedStates :+ environment)
       }
     }
@@ -63,7 +64,7 @@ case class MonteCarloAgent(stateVisitMap: Map[String, Int] = Map(), stateValueMa
       val newStateVisitMap = stateVisitMap + (stateKey -> (stateVisits + 1))
       val newStateValueMap = stateValueMap + (stateKey -> newStateValue)
 
-      val newAgent = MonteCarloAgent(newStateVisitMap, newStateValueMap)
+      val newAgent       = MonteCarloAgent(newStateVisitMap, newStateValueMap)
       val nextPlayerType = PlayerType.getNextPlayerType(playerType)
       newAgent.backpropagate(result, winningPlayerType, nextPlayerType, visitedStates.dropRight(1))
     }
@@ -73,11 +74,11 @@ case class MonteCarloAgent(stateVisitMap: Map[String, Int] = Map(), stateValueMa
   private def rollout(environment: Environment, playerType: PlayerType): RolloutResult = {
     val selectedAction  = randomAction(environment)
     val nextEnvironment = environment.step(selectedAction)
+    val nextPlayerType  = PlayerType.getNextPlayerType(playerType)
 
     if (nextEnvironment.isDone) {
-      RolloutResult(playerType, nextEnvironment.reward)
+      RolloutResult(nextPlayerType, nextEnvironment.reward)
     } else {
-      val nextPlayerType = PlayerType.getNextPlayerType(playerType)
       rollout(nextEnvironment, nextPlayerType)
     }
   }
@@ -86,12 +87,12 @@ case class MonteCarloAgent(stateVisitMap: Map[String, Int] = Map(), stateValueMa
     playerType match {
       case PlayerType.Player1 =>
         environment.possibleActions.maxBy(action => {
-          val nextEnvironment      = environment.step(action)
+          val nextEnvironment = environment.step(action)
 
           if (nextEnvironment.isDone) {
             Double.MaxValue
           } else {
-            val stateActionValue = getStateValue(nextEnvironment)
+            val stateActionValue     = getStateValue(nextEnvironment)
             val upperConfidenceBound = getUpperConfidenceBound(nextEnvironment, rootVisits)
 
             stateActionValue + upperConfidenceBound
@@ -99,12 +100,12 @@ case class MonteCarloAgent(stateVisitMap: Map[String, Int] = Map(), stateValueMa
         })
       case PlayerType.Player2 =>
         environment.possibleActions.maxBy(action => {
-          val nextEnvironment      = environment.step(action)
+          val nextEnvironment = environment.step(action)
 
           if (nextEnvironment.isDone) {
             Double.MaxValue
           } else {
-            val stateActionValue = getStateValue(nextEnvironment)
+            val stateActionValue     = getStateValue(nextEnvironment)
             val upperConfidenceBound = getUpperConfidenceBound(nextEnvironment, rootVisits)
 
             stateActionValue - upperConfidenceBound
@@ -127,4 +128,4 @@ case class MonteCarloAgent(stateVisitMap: Map[String, Int] = Map(), stateValueMa
   }
 }
 
-case class RolloutResult (playerType: PlayerType, reward: Double)
+case class RolloutResult(playerType: PlayerType, reward: Double)

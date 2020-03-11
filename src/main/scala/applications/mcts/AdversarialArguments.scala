@@ -11,10 +11,10 @@ object AdversarialArguments {
   val verbose: Boolean               = false
 
   // Training
-  val epochs: Int    = 10 // number of batches we want the agent to run
-  val batchSize: Int = 50 // should be able to handle 100
+  val epochs: Int    = 5 // number of batches we want the agent to run
+  val batchSize: Int = 10 // should be able to handle 100
 
   // MCTS
-  val iterations: Int                   = 500
+  val iterations: Int                    = 500
   val upperConfidenceBoundWeight: Double = 1.0
 }
