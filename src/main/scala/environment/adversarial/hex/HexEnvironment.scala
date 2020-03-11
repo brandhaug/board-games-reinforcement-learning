@@ -3,19 +3,71 @@ package environment.adversarial.hex
 import environment.EnvironmentType.EnvironmentType
 import environment._
 
+import scala.collection.mutable
+
 case class HexEnvironment(board: HexBoard) extends Environment {
   val environmentType: EnvironmentType = EnvironmentType.Hex
-  val reward: Double = {
-    0.0
+
+  val blueWins: Boolean = {
+    val firstColumn = board.grid.flatten.filter(_.xIndex == 0)
+    (for {
+      cell <- firstColumn
+      blueCell = cell if cell.cellType == HexCellType.Blue.id
+    } yield {
+      isWinningCell(blueCell)
+    }).contains(true)
   }
 
-  val possibleActions: List[Action] = {
-    for {
-      row       <- board.grid
-      cell      <- row
-      emptyCell = cell if cell.isEmpty
+  val redWins: Boolean = {
+    val firstRow = board.grid.head
+    (for {
+      cell <- firstRow
+      redCell = cell if cell.cellType == HexCellType.Red.id
     } yield {
-      HexAction(emptyCell.xIndex, emptyCell.yIndex, 0)
+      isWinningCell(redCell)
+    }).contains(true)
+  }
+
+  val reward: Double = {
+    if (redWins) println("Red wins")
+    else if (blueWins) println("Blue wins")
+
+    if (redWins) 1.0
+    else if (blueWins) -1.0
+    else 0.0
+  }
+
+  override def isDone: Boolean = redWins || blueWins
+
+  val possibleActions: List[Action] = {
+    if (isDone) {
+      List.empty
+    } else {
+      for {
+        row <- board.grid
+        cell <- row
+        emptyCell = cell if cell.isEmpty
+      } yield {
+        HexAction(emptyCell.xIndex, emptyCell.yIndex, 0)
+      }
+    }
+  }
+
+  private def isWinningCell(cell: Cell, visitedCells: Set[Cell] = Set.empty): Boolean = {
+    val neighboringCells = board.neighbors(cell: Cell)
+
+    val newVisitedCells     = visitedCells ++ neighboringCells + cell
+    val newNeighboringCells = neighboringCells -- visitedCells
+
+    if (newNeighboringCells.isEmpty) {
+      false
+    } else if (neighboringCells.exists(neighboringCell =>
+                 (neighboringCell.cellType == HexCellType.Red.id && neighboringCell.yIndex == board.grid.size - 1) || (neighboringCell.cellType == HexCellType.Blue.id && neighboringCell.xIndex == board.grid.head.size - 1))) {
+      true
+    } else if (newVisitedCells.size == visitedCells.size) {
+      false
+    } else {
+      newNeighboringCells.exists(neighboringCell => isWinningCell(neighboringCell, newVisitedCells))
     }
   }
 

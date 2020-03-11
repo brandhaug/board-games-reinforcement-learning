@@ -3,7 +3,6 @@ package environment
 import environment.BoardType.BoardType
 import scalafx.scene.canvas.GraphicsContext
 import scalafx.scene.paint.Color
-import scalafx.scene.shape.{Polygon, StrokeType}
 import utils.GraphicsUtils
 
 trait Cell {
