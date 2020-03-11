@@ -3,6 +3,8 @@ package environment
 import environment.BoardType.BoardType
 import scalafx.scene.canvas.GraphicsContext
 import scalafx.scene.paint.Color
+import scalafx.scene.shape.{Polygon, StrokeType}
+import utils.GraphicsUtils
 
 trait Cell {
   val xIndex: Int
@@ -14,7 +16,7 @@ trait Cell {
   val isEmpty: Boolean
   val isNone: Boolean
   val isNonEmpty: Boolean
-  def render(gc: GraphicsContext, startX: Int, startY: Int, width: Int, height: Int): Unit = {
+  def render(gc: GraphicsContext, startX: Double, startY: Double, width: Double, height: Double): Unit = {
     gc.setFill(color)
     gc.setStroke(strokeColor)
 
@@ -26,6 +28,8 @@ trait Cell {
         gc.fillOval(startX, startY, width - 5, height)
       case BoardType.Diamond =>
         gc.fillOval(startX, startY, width - 5, height)
+      case BoardType.Hex =>
+        GraphicsUtils.fillHexagon(gc, xIndex, yIndex, width, height)
       case _ => throw new Exception("Unknown BoardType")
     }
   }

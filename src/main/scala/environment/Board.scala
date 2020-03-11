@@ -7,8 +7,17 @@ import scalafx.scene.canvas.GraphicsContext
 trait Board {
   val grid: List[List[Cell]]
   val boardType: BoardType
-  val cellWidth: Int = Window.width / grid.head.length
-  val cellHeight: Int = Window.height / grid.length
+
+  def cellWidth: Double = boardType match {
+    case BoardType.Hex => (Window.width / grid.head.length.toDouble) / 2
+    case _             => Window.width / grid.head.length.toDouble
+  }
+
+  def cellHeight: Double = boardType match {
+    case BoardType.Hex => (Window.width / grid.head.length.toDouble) / 2
+    case _             => Window.height / grid.length.toDouble
+  }
+
   def render(gc: GraphicsContext): Unit = {
     for {
       (line, yIndex) <- grid.zipWithIndex
@@ -28,5 +37,5 @@ trait Board {
 
 object BoardType extends Enumeration {
   type BoardType = Value
-  val Square, Triangular, Diamond = Value
+  val Square, Triangular, Diamond, Hex = Value
 }

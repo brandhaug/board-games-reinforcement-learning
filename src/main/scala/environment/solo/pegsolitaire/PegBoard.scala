@@ -21,7 +21,7 @@ case class PegBoard(grid: List[List[PegCell]], boardType: BoardType) extends Boa
     }
   }
 
-  def cellStartX(line: List[PegCell], xIndex: Int): Int = {
+  def cellStartX(line: List[PegCell], xIndex: Int): Double = {
     val baseStartX = cellWidth * xIndex
     boardType match {
       case BoardType.Square => baseStartX

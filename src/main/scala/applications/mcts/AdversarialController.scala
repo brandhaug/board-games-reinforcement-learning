@@ -2,11 +2,10 @@ package applications.mcts
 
 import agent.MonteCarloAgent
 import applications.mcts.PlayerType.PlayerType
-import base.Agent
 import environment.adversarial.AdversarialMemory
 import environment.adversarial.hex.HexEnvironmentCreator
 import environment.adversarial.nim.NimEnvironmentCreator
-import environment.{Action, Environment, EnvironmentType}
+import environment.{Action, BoardType, Environment, EnvironmentType}
 import environment.adversarial.ledge.{LedgeCellType, LedgeEnvironmentCreator}
 import scalafx.Includes._
 import scalafx.animation.{KeyFrame, Timeline}
@@ -193,12 +192,26 @@ class AdversarialController(pane: Pane,
   }
 
   def resetGui(): Unit = {
+    resetCanvas()
     if (nimEnvironmentRadioButton.selected()) {
       secondaryEnvironmentVariableInput.setPromptText("Max take")
     } else {
       secondaryEnvironmentVariableInput.setPromptText("# Copper coins")
     }
     startButton.setText("Start")
+  }
+
+  def resetCanvas(): Unit = {
+    initialEnvironment.board.boardType match {
+      case BoardType.Diamond =>
+        canvas.setRotate(45)
+        canvas.setScaleX(0.7)
+        canvas.setScaleY(0.7)
+      case _ =>
+        canvas.setRotate(0)
+        canvas.setScaleX(1)
+        canvas.setScaleY(1)
+    }
   }
 
   def initializeEnvironment(): Environment = {

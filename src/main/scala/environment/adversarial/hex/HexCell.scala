@@ -34,7 +34,7 @@ case class HexCell(xIndex: Int, yIndex: Int, cellType: Int) extends Cell {
     }
   }
 
-  val boardType: BoardType = BoardType.Diamond
+  val boardType: BoardType = BoardType.Hex
 
   override def toString: String = {
     cellType.toString
