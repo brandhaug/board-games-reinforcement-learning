@@ -1,8 +1,9 @@
 package applications.mcts
 
-import agent.MonteCarloAgent
+import agent.{MonteCarloAgent, MonteCarloAgentType, MonteCarloNetworkAgent, MonteCarloTableAgent, StateActionNetwork}
 import applications.mcts.PlayerType.PlayerType
-import environment.adversarial.AdversarialMemory
+import applications.mcts.agent.MonteCarloAgentType.MonteCarloAgentType
+import environment.adversarial.{ActionVisitMemory, AdversarialMemory}
 import environment.adversarial.hex.HexEnvironmentCreator
 import environment.adversarial.nim.NimEnvironmentCreator
 import environment.{Action, BoardType, Environment, EnvironmentType}
@@ -26,12 +27,18 @@ class AdversarialController(pane: Pane,
                             ledgeEnvironmentRadioButton: RadioButton,
                             hexEnvironmentRadioButton: RadioButton,
                             boardSizeInput: TextField,
+                            tableLookupRadioButton: RadioButton,
+                            neuralNetworkRadioButton: RadioButton,
                             secondaryEnvironmentVariableInput: TextField,
                             createEnvironmentButton: Button,
                             trainButton: Button,
                             startButton: Button,
                             resetButton: Button,
                             hardResetButton: Button) {
+
+  // Agent toggle group
+  val agentToggleGroup = new ToggleGroup()
+  initializeAgentToggleGroup()
 
   // Environment toggle group
   val environmentToggleGroup = new ToggleGroup()
@@ -45,6 +52,8 @@ class AdversarialController(pane: Pane,
 
   var agent: MonteCarloAgent = _
 
+  var actionVisitMemoriesList: List[List[ActionVisitMemory]] = List()
+
   // States
   var paused = true
 
@@ -53,9 +62,8 @@ class AdversarialController(pane: Pane,
   def initialize(hardReset: Boolean = true): Unit = {
     if (hardReset) {
       initialEnvironment = initializeEnvironment()
+      agent = initializeAgent(initialEnvironment)
     }
-
-    agent = initializeAgent()
 
     resetGui()
 
@@ -140,9 +148,12 @@ class AdversarialController(pane: Pane,
       startingPlayer = getStartingPlayerType
       environment    = initialEnvironment
     } yield {
-      agent = initializeAgent()
+//      agent = initializeAgent(initialEnvironment)
       if (AdversarialArguments.verbose) printEnvironmentStart(environment)
-      playGame(environment, startingPlayer)
+      val history = playGame(environment, startingPlayer)
+      agent = agent.train(actionVisitMemoriesList)
+      actionVisitMemoriesList = List()
+      history
     }
 
     val winCount = batchHistory.count(memories => memories.last.playerType == PlayerType.Player1)
@@ -160,10 +171,12 @@ class AdversarialController(pane: Pane,
     playerType match {
       case PlayerType.Player1 =>
         agent = agent.iterate(environment, playerType)
+        actionVisitMemoriesList = actionVisitMemoriesList :+ agent.getActionVisitMemories(environment)
         agent.act(environment, playerType)
 //        agent.randomAction(environment)
       case PlayerType.Player2 =>
         agent = agent.iterate(environment, playerType)
+        actionVisitMemoriesList = actionVisitMemoriesList :+ agent.getActionVisitMemories(environment)
         agent.act(environment, playerType)
 //        agent.randomAction(environment)
     }
@@ -193,9 +206,14 @@ class AdversarialController(pane: Pane,
 
   def resetGui(): Unit = {
     resetCanvas()
-    if (nimEnvironmentRadioButton.selected()) {
+    if (hexEnvironmentRadioButton.selected()) {
+      neuralNetworkRadioButton.setVisible(true)
+      secondaryEnvironmentVariableInput.setVisible(false)
+    } else if (nimEnvironmentRadioButton.selected()) {
+      neuralNetworkRadioButton.setVisible(false)
       secondaryEnvironmentVariableInput.setPromptText("Max take")
     } else {
+      neuralNetworkRadioButton.setVisible(false)
       secondaryEnvironmentVariableInput.setPromptText("# Copper coins")
     }
     startButton.setText("Start")
@@ -205,6 +223,10 @@ class AdversarialController(pane: Pane,
     initialEnvironment.board.boardType match {
       case BoardType.Diamond =>
         canvas.setRotate(45)
+        canvas.setScaleX(0.7)
+        canvas.setScaleY(0.7)
+      case BoardType.Hex =>
+        canvas.setRotate(-30)
         canvas.setScaleX(0.7)
         canvas.setScaleY(0.7)
       case _ =>
@@ -217,7 +239,7 @@ class AdversarialController(pane: Pane,
   def initializeEnvironment(): Environment = {
     val sizeInputValue                         = boardSizeInput.getText
     val secondaryEnvironmentVariableInputValue = secondaryEnvironmentVariableInput.getText
-    val defaultSize                            = 20
+    val defaultSize                            = 11
     val defaultSecondaryEnvironmentVariable    = 4
     val size                                   = if (sizeInputValue.nonEmpty && StringUtils.isNumeric(sizeInputValue)) sizeInputValue.toInt else defaultSize
     val secondaryEnvironmentVariable =
@@ -255,6 +277,12 @@ class AdversarialController(pane: Pane,
     LedgeEnvironmentCreator.createEnvironment(size, copperCount)
   }
 
+  def initializeAgentToggleGroup(): Unit = {
+    tableLookupRadioButton.setToggleGroup(agentToggleGroup)
+    neuralNetworkRadioButton.setToggleGroup(agentToggleGroup)
+    tableLookupRadioButton.setSelected(true)
+  }
+
   def initializeEnvironmentToggleGroup(): Unit = {
     nimEnvironmentRadioButton.setToggleGroup(environmentToggleGroup)
     ledgeEnvironmentRadioButton.setToggleGroup(environmentToggleGroup)
@@ -274,9 +302,26 @@ class AdversarialController(pane: Pane,
     }
   }
 
-  def initializeAgent(): MonteCarloAgent = {
-    MonteCarloAgent()
+  def selectedAgentType(): MonteCarloAgentType = {
+    if (tableLookupRadioButton.selected()) MonteCarloAgentType.TableLookup
+    else if (neuralNetworkRadioButton.selected()) MonteCarloAgentType.NeuralNetwork
+    else throw new Exception("No agent radio button selected")
   }
+
+  def initializeAgent(environment: Environment): MonteCarloAgent = {
+    selectedAgentType() match {
+      case MonteCarloAgentType.TableLookup => MonteCarloTableAgent()
+      case MonteCarloAgentType.NeuralNetwork =>
+        val stateActionNetwork = StateActionNetwork(environment)
+        MonteCarloNetworkAgent(stateActionNetwork = stateActionNetwork)
+      case _ => throw new Exception("Unknown agent")
+    }
+  }
+
+  def selectAgentType(): Unit = {
+    hardReset()
+  }
+
 
   def hardReset(): Unit = {
     paused = true
@@ -292,9 +337,11 @@ class AdversarialController(pane: Pane,
 
   def selectEnvironment(): Unit = {
     if (hexEnvironmentRadioButton.selected()) {
-      secondaryEnvironmentVariableInput.setVisible(false)
+      neuralNetworkRadioButton.setSelected(true)
+    } else if (nimEnvironmentRadioButton.selected()) {
+      tableLookupRadioButton.setSelected(true)
     } else {
-      secondaryEnvironmentVariableInput.setVisible(true)
+      tableLookupRadioButton.setSelected(true)
     }
 
     hardReset()

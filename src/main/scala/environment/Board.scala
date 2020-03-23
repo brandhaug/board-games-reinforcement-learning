@@ -10,7 +10,7 @@ trait Board {
 
   def cellWidth: Double = {
     boardType match {
-      case BoardType.Hex => (Window.width - 40) / (grid.head.length.toDouble + ((grid.length - 1) * 0.5))
+      case BoardType.Hex => (Window.width - 40) / (grid.head.length.toDouble + ((grid.length - 1) * 0.55))
       case _             => Window.width / grid.head.length.toDouble
     }
   }

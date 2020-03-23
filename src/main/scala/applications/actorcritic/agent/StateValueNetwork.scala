@@ -1,6 +1,7 @@
 package applications.actorcritic.agent
 
 import applications.actorcritic.SoloArguments
+import base.Network
 import environment.{Cell, Environment}
 import org.deeplearning4j.nn.api.OptimizationAlgorithm
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration
@@ -9,12 +10,10 @@ import org.deeplearning4j.nn.conf.layers.{DenseLayer, OutputLayer}
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork
 import org.deeplearning4j.nn.weights.WeightInit
 import org.nd4j.linalg.activations.Activation
-import org.nd4j.linalg.api.ndarray.INDArray
-import org.nd4j.linalg.factory.Nd4j
 import org.nd4j.linalg.learning.config.Sgd
 import org.nd4j.linalg.lossfunctions.LossFunctions
 
-case class StateValueNetwork(initialEnvironment: Environment) {
+case class StateValueNetwork(initialEnvironment: Environment) extends Network {
   val channels      = 1
   val miniBatchSize = 1
 
@@ -51,39 +50,7 @@ case class StateValueNetwork(initialEnvironment: Environment) {
     net
   }
 
-  def normalize(flattenedValues: List[Double]): List[Double] = {
-    val max             = flattenedValues.max
-    val min             = flattenedValues.min
-    flattenedValues.map(value => (value - min) / (max - min))
+  def predictValue(grid: List[List[Cell]]): Double = {
+    predict(grid).head
   }
-
-  def flatten(grid: List[List[Cell]]): List[Double] = {
-    val values          = grid.map(_.map(_.cellType.toDouble))
-    values.flatten
-  }
-
-  def preprocessInput(grid: List[List[Cell]]): INDArray = {
-    val flattenedValues = flatten(grid)
-    val normalizedValues = normalize(flattenedValues)
-    val indArray   = Nd4j.create(normalizedValues.toArray)
-    indArray.reshape(Array(miniBatchSize, normalizedValues.size))
-  }
-
-  def preprocessLabel(label: Double): INDArray = {
-    val indArray = Nd4j.create(Array(label))
-    indArray.reshape(Array(miniBatchSize, 1))
-  }
-
-  def fit(grid: List[List[Cell]], labelValue: Double): Unit = {
-    val input = preprocessInput(grid)
-    val label = preprocessLabel(labelValue)
-    model.fit(input, label)
-  }
-
-  def predict(grid: List[List[Cell]]): Double = {
-    val input = preprocessInput(grid)
-    model.predict(input).head
-  }
-
-  override def toString: String = model.numParams().toString
 }

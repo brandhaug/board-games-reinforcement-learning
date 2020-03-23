@@ -20,7 +20,7 @@ case class NetworkActorCriticAgent(initialEnvironment: Environment,
     val actionIndex = memory.environment.possibleActions.indexOf(memory.action)
 
     // 1.1. Critic
-    val stateValue           = stateValueNetwork.predict(memory.environment.board.grid)
+    val stateValue           = stateValueNetwork.predictValue(memory.environment.board.grid)
 
     val newCriticEligibilities = criticEligibilities + (stateKey -> 1.0)
 
@@ -35,7 +35,7 @@ case class NetworkActorCriticAgent(initialEnvironment: Environment,
     // 2. Next environment
 
     // 2.1 Critic
-    val nextStateValue          = stateValueNetwork.predict(memory.environment.board.grid)
+    val nextStateValue          = stateValueNetwork.predictValue(memory.environment.board.grid)
     val temporalDifferenceError = memory.nextEnvironment.reward + (criticDiscountFactor * nextStateValue) - stateValue
 
     // 3. New agent
@@ -59,7 +59,7 @@ case class NetworkActorCriticAgent(initialEnvironment: Environment,
       val stateKey = memory.environment.toString
 
       // Critic
-      val stateValue           = stateValueNetwork.predict(memory.environment.board.grid)
+      val stateValue           = stateValueNetwork.predictValue(memory.environment.board.grid)
       val criticEligibility = currentAgent.criticEligibilities(stateKey)
 
       val newStateValue        = stateValue + (tableCriticLearningRate * temporalDifferenceError * criticEligibility)

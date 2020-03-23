@@ -17,7 +17,9 @@
         <TextField fx:id="boardSizeInput" styleClass="text-field" promptText="Size" />
         <TextField fx:id="secondaryEnvironmentVariableInput" styleClass="text-field" />
         <Button fx:id="createEnvironmentButton" onAction="#selectEnvironment" styleClass="button" text="Create" />
-        <Label fx:id="infoLabel" styleClass="label" textAlignment="CENTER" />
+        <Label styleClass="title-label" text="Agent type" textAlignment="CENTER" />
+        <RadioButton fx:id="tableLookupRadioButton" mnemonicParsing="false" onAction="#selectAgentType" text="Table lookup" />
+        <RadioButton fx:id="neuralNetworkRadioButton" mnemonicParsing="false" onAction="#selectAgentType" text="Neural network" />
         <Button fx:id="trainButton" onAction="#train" styleClass="button" text="Train" />
         <Button fx:id="startButton" onAction="#toggleStart" styleClass="button" />
         <Button fx:id="resetButton" onAction="#reset" styleClass="button" text="Reset" />
