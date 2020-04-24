@@ -1,6 +1,6 @@
 package utils
 
-import applications.hex.Window
+import applications.mcts.Window
 import scalafx.scene.canvas.GraphicsContext
 import scalafx.scene.paint.Color
 

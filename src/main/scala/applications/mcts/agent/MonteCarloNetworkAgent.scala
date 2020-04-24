@@ -1,5 +1,7 @@
 package applications.mcts.agent
 
+import java.io.File
+
 import applications.mcts.{AdversarialArguments, PlayerType}
 import applications.mcts.PlayerType.PlayerType
 import environment.Environment
@@ -8,7 +10,11 @@ import utils.ListUtils
 
 import scala.util.Random
 
-case class MonteCarloNetworkAgent(stateVisitMap: Map[String, Int] = Map(), stateValueMap: Map[String, Double] = Map(), stateActionNetwork: StateActionNetwork, epsilonRate: Double = AdversarialArguments.epsilonRate) extends MonteCarloAgent {
+case class MonteCarloNetworkAgent(stateVisitMap: Map[String, Int] = Map(),
+                                  stateValueMap: Map[String, Double] = Map(),
+                                  stateActionNetwork: StateActionNetwork,
+                                  epsilonRate: Double = AdversarialArguments.epsilonRate)
+    extends MonteCarloAgent {
 
   @scala.annotation.tailrec
   final def backpropagate(result: Double, winningPlayerType: PlayerType, playerType: PlayerType, visitedStates: List[Environment]): MonteCarloAgent = {
@@ -40,8 +46,8 @@ case class MonteCarloNetworkAgent(stateVisitMap: Map[String, Int] = Map(), state
       environment.possibleActions.filter(action => action.xIndex == selectedActionCell.xIndex && action.yIndex == selectedActionCell.yIndex).head
     }
 
-    val nextEnvironment    = environment.step(selectedAction)
-    val nextPlayerType     = PlayerType.getNextPlayerType(playerType)
+    val nextEnvironment = environment.step(selectedAction)
+    val nextPlayerType  = PlayerType.getNextPlayerType(playerType)
 
     if (nextEnvironment.isDone) {
       RolloutResult(nextPlayerType, nextEnvironment.reward)
@@ -52,7 +58,7 @@ case class MonteCarloNetworkAgent(stateVisitMap: Map[String, Int] = Map(), state
 
   def train(actionVisitMemoriesList: List[List[ActionVisitMemory]]): MonteCarloAgent = {
     actionVisitMemoriesList.foreach(actionVisitMemories => {
-      val environment = actionVisitMemories.head.environment
+      val environment       = actionVisitMemories.head.environment
       val visitDistribution = ListUtils.softMax(actionVisitMemories.map(_.visits.toDouble))
       val labels = environment.board.grid.flatten.map(cell => {
         val matchingActionVisitMemory = actionVisitMemories.find(actionVisitMemory => actionVisitMemory.action.xIndex == cell.xIndex && actionVisitMemory.action.yIndex == cell.yIndex)
@@ -71,8 +77,12 @@ case class MonteCarloNetworkAgent(stateVisitMap: Map[String, Int] = Map(), state
     val newEpsilonRate          = if (potentialNewEpsilonRate >= AdversarialArguments.epsilonMinRate) potentialNewEpsilonRate else AdversarialArguments.epsilonMinRate
 
     println(f"Epsilon rate: $newEpsilonRate")
-    val newAgent       = MonteCarloNetworkAgent(stateActionNetwork = stateActionNetwork, epsilonRate = newEpsilonRate)
+    val newAgent = MonteCarloNetworkAgent(stateActionNetwork = stateActionNetwork, epsilonRate = newEpsilonRate)
     newAgent
   }
 
+  def save(size: Int, epoch: Int): Unit = {
+    val file = new File(AdversarialArguments.getModelPath(size, epoch))
+    stateActionNetwork.model.save(file)
+  }
 }

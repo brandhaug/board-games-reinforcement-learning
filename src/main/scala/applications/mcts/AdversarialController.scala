@@ -135,29 +135,27 @@ class AdversarialController(pane: Pane,
   }
 
   def train(): Unit = {
-    for {
+    val epochHistory = for {
       epoch <- 1 to AdversarialArguments.epochs
-    } yield {
-      trainBatch(epoch)
-    }
-  }
-
-  def trainBatch(epoch: Int): Unit = {
-    val batchHistory = for {
-      _ <- (1 to AdversarialArguments.batchSize).toList
       startingPlayer = getStartingPlayerType
       environment    = initialEnvironment
     } yield {
-//      agent = initializeAgent(initialEnvironment)
+      println(f"Epoch $epoch/${AdversarialArguments.epochs}")
+      //      agent = initializeAgent(initialEnvironment)
       if (AdversarialArguments.verbose) printEnvironmentStart(environment)
       val history = playGame(environment, startingPlayer)
       agent = agent.train(actionVisitMemoriesList)
+
+      if (epoch % AdversarialArguments.networkSaveInterval == 0) {
+        agent.save(environment.board.size, epoch)
+      }
+
       actionVisitMemoriesList = List()
       history
     }
 
-    val winCount = batchHistory.count(memories => memories.last.playerType == PlayerType.Player1)
-    println(f"Epoch $epoch/${AdversarialArguments.epochs} - Wins: ${winCount}/${batchHistory.size} (${((winCount.toDouble / batchHistory.size.toDouble) * 100).round}%%)")
+    val winCount = epochHistory.count(memories => memories.last.playerType == PlayerType.Player1)
+    println(f"Wins: ${winCount}/${epochHistory.size} (${((winCount.toDouble / epochHistory.size.toDouble) * 100).round}%%)")
   }
 
   def getStartingPlayerType: PlayerType = AdversarialArguments.startingPlayerType match {

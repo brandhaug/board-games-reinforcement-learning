@@ -43,4 +43,7 @@ case class MonteCarloTableAgent(stateVisitMap: Map[String, Int] = Map(), stateVa
   def train(actionVisitMemoriesList: List[List[ActionVisitMemory]]): MonteCarloAgent = {
     this
   }
+
+  def save(size: Int, epoch: Int): Unit = {
+  }
 }

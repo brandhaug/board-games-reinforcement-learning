@@ -3,6 +3,33 @@ package environment.adversarial.hex
 import environment.EnvironmentType.EnvironmentType
 import environment._
 
+object HexEnvironment {
+  def createRow(size: Int, y: Int, stateList: List[Int]): List[Cell] = {
+    for {
+      x <- (0 until size).toList
+      index = (y * size) + x
+      cellType = HexCellType(stateList(index))
+    } yield {
+      HexCell(x, y, cellType)
+    }
+  }
+
+  def apply(stateList: List[Int]): HexEnvironment = {
+    val size = Math.sqrt(stateList.size).toInt
+
+    val grid = for {
+      y <- (0 until size).toList
+      row = createRow(size, y, stateList)
+    } yield {
+      row
+    }
+
+    val board = HexBoard(grid)
+
+    HexEnvironment(board)
+  }
+}
+
 case class HexEnvironment(board: HexBoard) extends Environment {
   val environmentType: EnvironmentType = EnvironmentType.Hex
 

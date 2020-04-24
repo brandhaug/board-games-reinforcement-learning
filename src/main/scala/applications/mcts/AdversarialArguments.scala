@@ -17,15 +17,14 @@ object AdversarialArguments {
   val verbose: Boolean               = false
 
   // Training
-  val epochs: Int    = 10 // number of batches we want the agent to run
-  val batchSize: Int = 1  // should be able to handle 100
+  val epochs: Int    = 1000 // number of batches we want the agent to run
 
   // MCTS
   val iterations: Int                    = 50
   val upperConfidenceBoundWeight: Double = 1.0
 
   // Neural Network
-  val networkLearningRate: Double = 0.0005
+  val networkLearningRate: Double = 0.0001
   val networkHiddenLayerConfigs: Seq[HiddenLayerConfig] = Seq(
     HiddenLayerConfig(64, Activation.RELU),
     HiddenLayerConfig(64, Activation.RELU),
@@ -34,19 +33,26 @@ object AdversarialArguments {
 
   val networkLoss      = LossFunctions.LossFunction.MSE
   val networkOptimizer = OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT
-
-//  val networkUpdater: IUpdater = new AdaGrad(networkLearningRate)
-  val networkUpdater: IUpdater = new Sgd(networkLearningRate)
-//  val networkUpdater: IUpdater = new RmsProp(networkLearningRate)
-//  val networkUpdater: IUpdater = new Adam(networkLearningRate)
-  val networkMiniBatchSize: Int = 64
-
+  val networkUpdaterString = "sgd"
+  val networkMiniBatchSize: Int = 64 // TODO
   val epsilonRate: Double      = 1.0   // aka exploration rate
   val epsilonDecayRate: Double = 0.995
   val epsilonMinRate: Double   = 0.0
+  val networkSaveInterval: Int = 100
 
-  // TOPP
-  val networkSaves: Int = 5
-//  The number (M) of ANETs to be cached in preparation for a TOPP. These should be cached, starting with anuntrained net prior to episode 1, at a fixed interval throughout the training episodes.
-//  The number of games, G, to be played between any two ANET-based agents that meet during the round-robinplay of the TOPP
+  // Tournament
+  val tournamentModelEpoch = 600
+
+  def networkUpdater: IUpdater = networkUpdaterString match {
+    case "adagrad" => new AdaGrad(networkLearningRate)
+    case "sgd" => new Sgd(networkLearningRate)
+    case "rms" => new RmsProp(networkLearningRate)
+    case "adam" => new Adam(networkLearningRate)
+  }
+
+  def getModelPath(size: Int, epoch: Int = tournamentModelEpoch): String = {
+    val learningRateString = networkLearningRate.toString.drop(2)
+    f"models/${size}_${networkUpdaterString}_${learningRateString}_${epoch}"
+  }
 }
+

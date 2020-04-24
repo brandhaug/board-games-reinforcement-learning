@@ -1,5 +1,7 @@
 package applications.mcts.agent
 
+import java.io.File
+
 import applications.mcts.AdversarialArguments
 import base.Network
 import environment.{Cell, Environment, EnvironmentType}
@@ -11,7 +13,7 @@ import org.deeplearning4j.nn.weights.WeightInit
 import org.nd4j.linalg.activations.Activation
 import utils.ListUtils
 
-case class StateActionNetwork(initialEnvironment: Environment) extends Network {
+case class StateActionNetwork(initialEnvironment: Environment, pathName: Option[String] = None) extends Network {
   val channels: Int      = 1
   val miniBatchSize: Int = AdversarialArguments.networkMiniBatchSize
 
@@ -43,7 +45,14 @@ case class StateActionNetwork(initialEnvironment: Environment) extends Network {
       .setInputType(InputType.convolutional(inputHeight, inputWidth, channels))
       .build()
 
-    val net = new MultiLayerNetwork(conf);
+    val net = pathName match {
+      case Some(pathName) =>
+        val file = new File(pathName)
+        MultiLayerNetwork.load(file, false)
+      case None =>
+        new MultiLayerNetwork(conf);
+    }
+
     net.init()
 
     net
@@ -64,11 +73,9 @@ case class StateActionNetwork(initialEnvironment: Environment) extends Network {
     ListUtils.softMax(updatedPredictions)
   }
 
-
-
   def predictActionCell(grid: List[List[Cell]]): Cell = {
-    val predictions = predict(grid)
-    val maxIndex = predictions.indexOf(predictions.max)
+    val predictions   = predict(grid)
+    val maxIndex      = predictions.indexOf(predictions.max)
     val flattenedGrid = grid.flatten
 
     flattenedGrid(maxIndex)

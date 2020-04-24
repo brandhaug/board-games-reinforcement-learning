@@ -109,6 +109,7 @@ trait MonteCarloAgent extends Agent {
   def backpropagate(result: Double, winningPlayerType: PlayerType, playerType: PlayerType, visitedStates: List[Environment]): MonteCarloAgent
   def rollout(environment: Environment, playerType: PlayerType): RolloutResult
   def train(actionVisitMemoriesList: List[List[ActionVisitMemory]]): MonteCarloAgent
+  def save(size: Int, epoch: Int): Unit
 }
 
 case class RolloutResult(playerType: PlayerType, reward: Double)

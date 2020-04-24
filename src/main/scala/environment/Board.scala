@@ -8,6 +8,8 @@ trait Board {
   val grid: List[List[Cell]]
   val boardType: BoardType
 
+  def size: Int = grid.size
+
   def cellWidth: Double = {
     boardType match {
       case BoardType.Hex => (Window.width - 40) / (grid.head.length.toDouble + ((grid.length - 1) * 0.55))
