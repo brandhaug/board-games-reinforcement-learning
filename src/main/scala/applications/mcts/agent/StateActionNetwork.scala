@@ -4,23 +4,28 @@ import java.io.File
 
 import applications.mcts.AdversarialArguments
 import base.Network
-import environment.{Cell, Environment, EnvironmentType}
+import environment.{Cell, Environment}
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration
 import org.deeplearning4j.nn.conf.inputs.InputType
-import org.deeplearning4j.nn.conf.layers.{DenseLayer, OutputLayer}
+import org.deeplearning4j.nn.conf.layers.{ConvolutionLayer, DenseLayer, OutputLayer}
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork
 import org.deeplearning4j.nn.weights.WeightInit
 import org.nd4j.linalg.activations.Activation
 import utils.ListUtils
 
-case class StateActionNetwork(initialEnvironment: Environment, pathName: Option[String] = None) extends Network {
-  val channels: Int      = 1
-  val miniBatchSize: Int = AdversarialArguments.networkMiniBatchSize
+object StateActionNetwork {
+  def apply(initialEnvironment: Environment, pathName: Option[String] = None): StateActionNetwork = {
+    StateActionNetwork(initialEnvironment.board.grid.size, pathName)
+  }
+}
+
+case class StateActionNetwork(size: Int, pathName: Option[String]) extends Network {
+  val channels: Int = 1
 
   val model: MultiLayerNetwork = {
-    val inputHeight     = initialEnvironment.board.grid.size
-    val inputWidth      = initialEnvironment.board.grid.head.size
-    val outputDimension = initialEnvironment.board.grid.flatten.size
+    val inputHeight     = size
+    val inputWidth      = size
+    val outputDimension = size * size
 
     val builder = new NeuralNetConfiguration.Builder()
       .weightInit(WeightInit.XAVIER)
@@ -30,10 +35,22 @@ case class StateActionNetwork(initialEnvironment: Environment, pathName: Option[
 
     for (hiddenLayerConfig <- AdversarialArguments.networkHiddenLayerConfigs) {
       builder.layer(
-        new DenseLayer.Builder()
-          .nOut(hiddenLayerConfig.dimension)
-          .activation(hiddenLayerConfig.activation)
-          .build())
+        hiddenLayerConfig.layerType match {
+          case HiddenLayerType.Dense =>
+            new DenseLayer.Builder()
+              .nOut(hiddenLayerConfig.dimension)
+              .activation(hiddenLayerConfig.activation)
+              .build()
+          case HiddenLayerType.Convolutional =>
+            new ConvolutionLayer.Builder()
+              .nOut(hiddenLayerConfig.dimension)
+              .kernelSize(2, 2)
+              .stride(1, 1)
+              .activation(hiddenLayerConfig.activation)
+              .build()
+          case _ => throw new Error("Unknown HiddenLayerType")
+        }
+      )
     }
 
     val conf = builder

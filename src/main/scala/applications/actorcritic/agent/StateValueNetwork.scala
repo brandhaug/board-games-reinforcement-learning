@@ -13,13 +13,19 @@ import org.nd4j.linalg.activations.Activation
 import org.nd4j.linalg.learning.config.Sgd
 import org.nd4j.linalg.lossfunctions.LossFunctions
 
-case class StateValueNetwork(initialEnvironment: Environment) extends Network {
+object StateValueNetwork {
+  def apply(initialEnvironment: Environment): StateValueNetwork = {
+    StateValueNetwork(initialEnvironment.board.size)
+  }
+}
+
+case class StateValueNetwork(size: Int) extends Network {
   val channels      = 1
   val miniBatchSize = 1
 
   val model: MultiLayerNetwork = {
-    val inputHeight = initialEnvironment.board.grid.size
-    val inputWidth  = initialEnvironment.board.grid.head.size
+    val inputHeight = size
+    val inputWidth  = size
 
     val builder = new NeuralNetConfiguration.Builder()
       .weightInit(WeightInit.XAVIER)

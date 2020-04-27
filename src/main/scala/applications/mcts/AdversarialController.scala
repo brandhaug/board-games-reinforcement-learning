@@ -166,18 +166,21 @@ class AdversarialController(pane: Pane,
   }
 
   def getAction(environment: Environment, playerType: PlayerType): Action = {
-    playerType match {
-      case PlayerType.Player1 =>
-        agent = agent.iterate(environment, playerType)
-        actionVisitMemoriesList = actionVisitMemoriesList :+ agent.getActionVisitMemories(environment)
-        agent.act(environment, playerType)
-//        agent.randomAction(environment)
-      case PlayerType.Player2 =>
-        agent = agent.iterate(environment, playerType)
-        actionVisitMemoriesList = actionVisitMemoriesList :+ agent.getActionVisitMemories(environment)
-        agent.act(environment, playerType)
-//        agent.randomAction(environment)
-    }
+    agent = agent.iterate(environment, playerType)
+    actionVisitMemoriesList = actionVisitMemoriesList :+ agent.getActionVisitMemories(environment)
+    agent.act(environment, playerType)
+//    playerType match {
+//      case PlayerType.Player1 =>
+//        agent = agent.iterate(environment, playerType)
+//        actionVisitMemoriesList = actionVisitMemoriesList :+ agent.getActionVisitMemories(environment)
+//        agent.act(environment, playerType)
+////        agent.randomAction(environment)
+//      case PlayerType.Player2 =>
+//        agent = agent.iterate(environment, playerType)
+//        actionVisitMemoriesList = actionVisitMemoriesList :+ agent.getActionVisitMemories(environment)
+//        agent.act(environment, playerType)
+////        agent.randomAction(environment)
+//    }
   }
 
   def playGame(environment: Environment, playerType: PlayerType, memories: List[AdversarialMemory] = List()): List[AdversarialMemory] = {
@@ -278,14 +281,14 @@ class AdversarialController(pane: Pane,
   def initializeAgentToggleGroup(): Unit = {
     tableLookupRadioButton.setToggleGroup(agentToggleGroup)
     neuralNetworkRadioButton.setToggleGroup(agentToggleGroup)
-    tableLookupRadioButton.setSelected(true)
+    neuralNetworkRadioButton.setSelected(true)
   }
 
   def initializeEnvironmentToggleGroup(): Unit = {
     nimEnvironmentRadioButton.setToggleGroup(environmentToggleGroup)
     ledgeEnvironmentRadioButton.setToggleGroup(environmentToggleGroup)
     hexEnvironmentRadioButton.setToggleGroup(environmentToggleGroup)
-    nimEnvironmentRadioButton.setSelected(true)
+    hexEnvironmentRadioButton.setSelected(true)
   }
 
   def toggleStart(): Unit = {

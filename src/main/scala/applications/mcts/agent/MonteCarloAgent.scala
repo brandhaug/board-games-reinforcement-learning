@@ -53,34 +53,21 @@ trait MonteCarloAgent extends Agent {
   }
 
   private def selectAction(environment: Environment, playerType: PlayerType, rootVisits: Int): Action = {
-    playerType match {
-      case PlayerType.Player1 =>
-        environment.possibleActions.maxBy(action => {
-          val nextEnvironment = environment.step(action)
+    environment.possibleActions.maxBy(action => {
+      val nextEnvironment = environment.step(action)
 
-          if (nextEnvironment.isDone) {
-            Double.MaxValue
-          } else {
-            val stateActionValue     = getStateValue(nextEnvironment)
-            val upperConfidenceBound = getUpperConfidenceBound(nextEnvironment, rootVisits)
+      if (nextEnvironment.isDone) {
+        Double.MaxValue
+      } else {
+        val stateActionValue = getStateValue(nextEnvironment)
+        val upperConfidenceBound = getUpperConfidenceBound(nextEnvironment, rootVisits)
 
-            stateActionValue + upperConfidenceBound
-          }
-        })
-      case PlayerType.Player2 =>
-        environment.possibleActions.maxBy(action => {
-          val nextEnvironment = environment.step(action)
-
-          if (nextEnvironment.isDone) {
-            Double.MaxValue
-          } else {
-            val stateActionValue     = getStateValue(nextEnvironment)
-            val upperConfidenceBound = getUpperConfidenceBound(nextEnvironment, rootVisits)
-
-            stateActionValue - upperConfidenceBound
-          }
-        })
-    }
+        playerType match {
+          case PlayerType.Player1 => stateActionValue + upperConfidenceBound
+          case PlayerType.Player2 => stateActionValue - upperConfidenceBound
+        }
+      }
+    })
   }
 
   private def getStateValue(environment: Environment): Double = {

@@ -57,19 +57,21 @@ case class MonteCarloNetworkAgent(stateVisitMap: Map[String, Int] = Map(),
   }
 
   def train(actionVisitMemoriesList: List[List[ActionVisitMemory]]): MonteCarloAgent = {
-    actionVisitMemoriesList.foreach(actionVisitMemories => {
+    val filteredActionVisitMemoriesList = ListUtils.takeRandomBatch(actionVisitMemoriesList, AdversarialArguments.networkBatchSize)
+    filteredActionVisitMemoriesList.foreach(actionVisitMemories => {
       val environment       = actionVisitMemories.head.environment
-      val visitDistribution = ListUtils.softMax(actionVisitMemories.map(_.visits.toDouble))
-      val labels = environment.board.grid.flatten.map(cell => {
+      val visitList = actionVisitMemories.map(_.visits.toDouble)
+      val filteredVisitList = environment.board.grid.flatten.map(cell => {
         val matchingActionVisitMemory = actionVisitMemories.find(actionVisitMemory => actionVisitMemory.action.xIndex == cell.xIndex && actionVisitMemory.action.yIndex == cell.yIndex)
 
         if (matchingActionVisitMemory.nonEmpty) {
-          visitDistribution(actionVisitMemories.indexOf(matchingActionVisitMemory.get))
+          visitList(actionVisitMemories.indexOf(matchingActionVisitMemory.get))
         } else {
           0.0
         }
       })
 
+      val labels = ListUtils.softMax(filteredVisitList)
       stateActionNetwork.fit(environment.board.grid, labels)
     })
 

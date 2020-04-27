@@ -1,37 +1,42 @@
 package base
 
+import applications.mcts.AdversarialArguments
+import applications.mcts.agent.HiddenLayerType
 import environment.{Cell, Environment}
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork
 import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
+import utils.ListUtils
 
 trait Network {
-  val initialEnvironment: Environment
+  val size: Int
   val channels: Int
-  val miniBatchSize: Int
   val model: MultiLayerNetwork
 
-  def normalize(flattenedValues: List[Double]): List[Double] = {
-    val max = flattenedValues.max
-    val min = flattenedValues.min
-
-    if (max == min) { // Empty board
-      flattenedValues.map(_ => 0.0)
-    } else {
-      flattenedValues.map(value => (value - min) / (max - min))
-    }
-  }
-
   def flattenValues(grid: List[List[Cell]]): List[Double] = {
-    val values = grid.map(_.map(_.cellType.toDouble))
+    val values = getGridValues(grid)
     values.flatten
   }
 
+  def getGridValues(grid: List[List[Cell]]): List[List[Double]] = {
+    grid.map(_.map(_.cellType.toDouble))
+  }
+
   def preprocessInput(grid: List[List[Cell]]): INDArray = {
-    val flattenedValues  = flattenValues(grid)
-    val normalizedValues = normalize(flattenedValues)
-    val indArray         = Nd4j.create(normalizedValues.toArray)
-    indArray.reshape(Array(1, normalizedValues.size))
+    val layerType = AdversarialArguments.networkHiddenLayerConfigs.head.layerType
+
+    layerType match {
+      case HiddenLayerType.Dense =>
+        val flattenedValues  = flattenValues(grid)
+        val normalizedValues = ListUtils.normalize(flattenedValues)
+        val indArray = Nd4j.create(normalizedValues.toArray)
+        indArray.reshape(Array(1, normalizedValues.size))
+      case HiddenLayerType.Convolutional =>
+        val values = getGridValues(grid)
+        val normalizedValues = ListUtils.normalizeGrid(values)
+        val indArray = Nd4j.create(normalizedValues.map(_.toArray).toArray)
+        indArray.reshape(Array(1, 1, normalizedValues.size, normalizedValues.size))
+    }
   }
 
   def preprocessLabel(labels: List[Double]): INDArray = {
