@@ -104,7 +104,7 @@ class AdversarialController(pane: Pane,
     environment.environmentType match {
       case EnvironmentType.Nim   => println(f"Starting pile: ${environment.nonEmptyCells} stones")
       case EnvironmentType.Ledge => println(f"Start board: [${environment.toString}]")
-      case EnvironmentType.Hex => println(f"Start board: ${environment.board.grid.flatten.size} cells")
+      case EnvironmentType.Hex   => println(f"Start board: ${environment.board.grid.flatten.size} cells")
     }
   }
 
@@ -141,7 +141,7 @@ class AdversarialController(pane: Pane,
       environment    = initialEnvironment
     } yield {
       println(f"Epoch $epoch/${AdversarialArguments.epochs}")
-      //      agent = initializeAgent(initialEnvironment)
+      agent = agent.reset
       if (AdversarialArguments.verbose) printEnvironmentStart(environment)
       val history = playGame(environment, startingPlayer)
       agent = agent.train(actionVisitMemoriesList)
@@ -167,17 +167,17 @@ class AdversarialController(pane: Pane,
 
   def getAction(environment: Environment, playerType: PlayerType): Action = {
     agent = agent.iterate(environment, playerType)
-    actionVisitMemoriesList = actionVisitMemoriesList :+ agent.getActionVisitMemories(environment)
+    actionVisitMemoriesList = actionVisitMemoriesList :+ agent.getActionVisitMemories(environment, playerType)
     agent.act(environment, playerType)
 //    playerType match {
 //      case PlayerType.Player1 =>
 //        agent = agent.iterate(environment, playerType)
-//        actionVisitMemoriesList = actionVisitMemoriesList :+ agent.getActionVisitMemories(environment)
+//        actionVisitMemoriesList = actionVisitMemoriesList :+ agent.getActionVisitMemories(environment, playerType)
 //        agent.act(environment, playerType)
 ////        agent.randomAction(environment)
 //      case PlayerType.Player2 =>
-//        agent = agent.iterate(environment, playerType)
-//        actionVisitMemoriesList = actionVisitMemoriesList :+ agent.getActionVisitMemories(environment)
+//        agent = agent.iterate(environment, playerType, iterationsLeft = 30)
+//        actionVisitMemoriesList = actionVisitMemoriesList :+ agent.getActionVisitMemories(environment, playerType)
 //        agent.act(environment, playerType)
 ////        agent.randomAction(environment)
 //    }
@@ -240,7 +240,7 @@ class AdversarialController(pane: Pane,
   def initializeEnvironment(): Environment = {
     val sizeInputValue                         = boardSizeInput.getText
     val secondaryEnvironmentVariableInputValue = secondaryEnvironmentVariableInput.getText
-    val defaultSize                            = 11
+    val defaultSize                            = 6
     val defaultSecondaryEnvironmentVariable    = 4
     val size                                   = if (sizeInputValue.nonEmpty && StringUtils.isNumeric(sizeInputValue)) sizeInputValue.toInt else defaultSize
     val secondaryEnvironmentVariable =
@@ -322,7 +322,6 @@ class AdversarialController(pane: Pane,
   def selectAgentType(): Unit = {
     hardReset()
   }
-
 
   def hardReset(): Unit = {
     paused = true

@@ -12,32 +12,34 @@ object AdversarialArguments {
   val stepDelay: Double = 0.8
 
   // Game simulator
-  val startingPlayerType: PlayerType = PlayerType.Player1
+  val startingPlayerType: PlayerType = PlayerType.Mixed
   val verbose: Boolean               = false
 
   // Training
-  val epochs: Int    = 600 // number of batches we want the agent to run
+  val epochs: Int    = 500 // number of batches we want the agent to run
 
   // MCTS
-  val iterations: Int                    = 100
+  val iterations: Int                    = 50
   val upperConfidenceBoundWeight: Double = 1.0
 
   // Neural Network
   val networkLearningRate: Double = 0.0001
   val networkHiddenLayerConfigs: Seq[HiddenLayerConfig] = Seq(
-    HiddenLayerConfig(HiddenLayerType.Convolutional, 128, Activation.RELU),
+    HiddenLayerConfig(HiddenLayerType.Dense, 100, Activation.TANH),
+    HiddenLayerConfig(HiddenLayerType.Dense, 200, Activation.TANH),
   )
-  val networkLoss      = LossFunctions.LossFunction.MSE
+  val networkLoss      = LossFunctions.LossFunction.RECONSTRUCTION_CROSSENTROPY
   val networkOptimizer = OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT
-  val networkUpdaterString = "sgd"
-  val networkBatchSize: Int = 100
+  val networkUpdaterString = "rms"
+  val networkBatchSize: Int = 10
   val epsilonRate: Double      = 1.0   // aka exploration rate
-  val epsilonDecayRate: Double = 0.995 // 0.995
+  val epsilonDecayRate: Double = 0.995
   val epsilonMinRate: Double   = 0.0
-  val networkSaveInterval: Int = 100
+  val networkSaveInterval: Int = 5
 
   // Tournament
-  val tournamentModelEpoch = 600
+  val tournamentModelEpoch = 5
+  val tournamentGames = 5
 
   // Functions
   def networkUpdater: IUpdater = networkUpdaterString match {

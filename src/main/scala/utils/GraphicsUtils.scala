@@ -29,7 +29,7 @@ object GraphicsUtils {
 
 
     gc.setLineWidth(3)
-    gc.setStroke(Color.Blue)
+    gc.setStroke(Color.Red)
 
     if (x == 0) {
       gc.strokePolyline(
@@ -49,7 +49,7 @@ object GraphicsUtils {
       )
     }
 
-    gc.setStroke(Color.Red)
+    gc.setStroke(Color.Blue)
     if (y == 0) {
       gc.strokePolyline(
         Seq(

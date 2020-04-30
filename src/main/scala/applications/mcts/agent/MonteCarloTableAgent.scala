@@ -46,4 +46,8 @@ case class MonteCarloTableAgent(stateVisitMap: Map[String, Int] = Map(), stateVa
 
   def save(size: Int, epoch: Int): Unit = {
   }
+
+  def reset: MonteCarloAgent = {
+    MonteCarloTableAgent()
+  }
 }

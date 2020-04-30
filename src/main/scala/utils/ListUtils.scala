@@ -23,7 +23,7 @@ object ListUtils {
     Random.shuffle(list).take(batchSize)
   }
 
-  def getRow(list: List[Double], size: Int, y: Int): List[Double] = {
+  def getRow[A](list: List[A], size: Int, y: Int): List[A] = {
     for {
     x <- (0 until size).toList
     index = y * size + x
@@ -32,26 +32,30 @@ object ListUtils {
     }
   }
 
-  def normalizeGrid(values: List[List[Double]]): List[List[Double]] = {
-    val flattened = values.flatten
-    val normalized = normalize(flattened)
-    val size = values.size
+  def deflatten[A](values: List[A], size: Int): List[List[A]] = {
     for {
       y <- (0 until size).toList
-      row = getRow(normalized, size, y)
+      row = getRow(values, size, y)
     } yield {
       row
     }
   }
 
-  def normalize(values: List[Double]): List[Double] = {
-    val max = values.max
-    val min = values.min
+  def normalizeGrid(values: List[List[Double]]): List[List[Double]] = {
+    val flattened = values.flatten
+    val normalized = normalize(flattened, min = Some(0.0), max = Some(2.0))
+    val size = values.size
+    deflatten(normalized, size)
+  }
 
-    if (max == min) { // Empty board
+  def normalize(values: List[Double], min: Option[Double] = None, max: Option[Double] = None): List[Double] = {
+    val maxValue = if (max.isEmpty) values.max else max.get
+    val minValue = if (min.isEmpty) values.min else min.get
+
+    if (maxValue == minValue) { // Empty board
       values.map(_ => 0.0)
     } else {
-      values.map(value => (value - min) / (max - min))
+      values.map(value => (value - minValue) / (maxValue - minValue))
     }
   }
 }

@@ -33,23 +33,42 @@ object HexEnvironment {
 case class HexEnvironment(board: HexBoard) extends Environment {
   val environmentType: EnvironmentType = EnvironmentType.Hex
 
-  val blueWins: Boolean = {
+//  val blueWins: Boolean = {
+//    val firstColumn = board.grid.flatten.filter(_.xIndex == 0)
+//    (for {
+//      cell <- firstColumn
+//      blueCell = cell if cell.cellType == HexCellType.Blue.id
+//    } yield {
+//      isWinningCell(blueCell)
+//    }).contains(true)
+//  }
+//
+//  val redWins: Boolean = {
+//    val firstRow = board.grid.head
+//    (for {
+//      cell <- firstRow
+//      redCell = cell if cell.cellType == HexCellType.Red.id
+//    } yield {
+//      isWinningCell(redCell)
+//    }).contains(true)
+//  }
+  val redWins: Boolean = {
     val firstColumn = board.grid.flatten.filter(_.xIndex == 0)
     (for {
       cell <- firstColumn
-      blueCell = cell if cell.cellType == HexCellType.Blue.id
-    } yield {
-      isWinningCell(blueCell)
-    }).contains(true)
-  }
-
-  val redWins: Boolean = {
-    val firstRow = board.grid.head
-    (for {
-      cell <- firstRow
       redCell = cell if cell.cellType == HexCellType.Red.id
     } yield {
       isWinningCell(redCell)
+    }).contains(true)
+  }
+
+  val blueWins: Boolean = {
+    val firstRow = board.grid.head
+    (for {
+      cell <- firstRow
+      blueCell = cell if cell.cellType == HexCellType.Blue.id
+    } yield {
+      isWinningCell(blueCell)
     }).contains(true)
   }
 
@@ -83,7 +102,7 @@ case class HexEnvironment(board: HexBoard) extends Environment {
     if (newNeighboringCells.isEmpty) {
       false
     } else if (neighboringCells.exists(neighboringCell =>
-                 (neighboringCell.cellType == HexCellType.Red.id && neighboringCell.yIndex == board.grid.size - 1) || (neighboringCell.cellType == HexCellType.Blue.id && neighboringCell.xIndex == board.grid.head.size - 1))) {
+                 (neighboringCell.cellType == HexCellType.Blue.id && neighboringCell.yIndex == board.grid.size - 1) || (neighboringCell.cellType == HexCellType.Red.id && neighboringCell.xIndex == board.grid.head.size - 1))) {
       true
     } else if (newVisitedCells.size == visitedCells.size) {
       false
@@ -148,5 +167,7 @@ case class HexEnvironment(board: HexBoard) extends Environment {
     }
   }
 
-  override def toString: String = board.grid.flatten.map(_.toString).mkString("")
+  override def toString: String = {
+    board.grid.map(_.map(_.toString).mkString("")).mkString("\n")
+  }
 }

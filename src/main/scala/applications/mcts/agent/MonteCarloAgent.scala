@@ -83,13 +83,13 @@ trait MonteCarloAgent extends Agent {
     else AdversarialArguments.upperConfidenceBoundWeight * Math.sqrt(Math.log(rootVisits) / (1 + stateVisits).toDouble)
   }
 
-  def getActionVisitMemories(environment: Environment): List[ActionVisitMemory] = {
+  def getActionVisitMemories(environment: Environment, playerType: PlayerType): List[ActionVisitMemory] = {
     environment.possibleActions.map(action => {
       val nextEnvironment = environment.step(action)
       val nextEnvironmentKey = nextEnvironment.toString
       val nextEnvironmentVisits = stateVisitMap.getOrElse(nextEnvironmentKey, 0)
 
-      ActionVisitMemory(environment, action, nextEnvironment, nextEnvironmentVisits)
+      ActionVisitMemory(environment, action, nextEnvironment, nextEnvironmentVisits, playerType)
     })
   }
 
@@ -97,6 +97,7 @@ trait MonteCarloAgent extends Agent {
   def rollout(environment: Environment, playerType: PlayerType): RolloutResult
   def train(actionVisitMemoriesList: List[List[ActionVisitMemory]]): MonteCarloAgent
   def save(size: Int, epoch: Int): Unit
+  def reset: MonteCarloAgent
 }
 
 case class RolloutResult(playerType: PlayerType, reward: Double)

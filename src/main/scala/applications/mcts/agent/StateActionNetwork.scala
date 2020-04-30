@@ -2,7 +2,8 @@ package applications.mcts.agent
 
 import java.io.File
 
-import applications.mcts.AdversarialArguments
+import applications.mcts.{AdversarialArguments, PlayerType}
+import applications.mcts.PlayerType.PlayerType
 import base.Network
 import environment.{Cell, Environment}
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration
@@ -59,7 +60,7 @@ case class StateActionNetwork(size: Int, pathName: Option[String]) extends Netwo
           .nOut(outputDimension)
           .activation(Activation.SOFTMAX)
           .build())
-      .setInputType(InputType.convolutional(inputHeight, inputWidth, channels))
+      .setInputType(InputType.feedForward((size * size) + 1))
       .build()
 
     val net = pathName match {
@@ -75,8 +76,8 @@ case class StateActionNetwork(size: Int, pathName: Option[String]) extends Netwo
     net
   }
 
-  override def predict(grid: List[List[Cell]]): List[Double] = {
-    val input      = preprocessInput(grid)
+  override def predict(grid: List[List[Cell]], playerType: PlayerType): List[Double] = {
+    val input      = preprocessInput(grid, playerType)
     val prediction = model.output(input).toDoubleVector.toList
 
     val updatedPredictions = for {
@@ -90,11 +91,10 @@ case class StateActionNetwork(size: Int, pathName: Option[String]) extends Netwo
     ListUtils.softMax(updatedPredictions)
   }
 
-  def predictActionCell(grid: List[List[Cell]]): Cell = {
-    val predictions   = predict(grid)
-    val maxIndex      = predictions.indexOf(predictions.max)
+  def predictActionCell(grid: List[List[Cell]], playerType: PlayerType): Cell = {
+    val predictions = predict(grid, playerType)
+    val maxIndex = predictions.indexOf(predictions.max)
     val flattenedGrid = grid.flatten
-
     flattenedGrid(maxIndex)
   }
 }

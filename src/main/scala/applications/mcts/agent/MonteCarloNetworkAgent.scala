@@ -31,7 +31,7 @@ case class MonteCarloNetworkAgent(stateVisitMap: Map[String, Int] = Map(),
       val newStateVisitMap = stateVisitMap + (stateKey -> (stateVisits + 1))
       val newStateValueMap = stateValueMap + (stateKey -> newStateValue)
 
-      val newAgent       = MonteCarloNetworkAgent(newStateVisitMap, newStateValueMap, stateActionNetwork, epsilonRate) // This is tjjhe only diff
+      val newAgent       = MonteCarloNetworkAgent(newStateVisitMap, newStateValueMap, stateActionNetwork, epsilonRate)
       val nextPlayerType = PlayerType.getNextPlayerType(playerType)
       newAgent.backpropagate(result, winningPlayerType, nextPlayerType, visitedStates.dropRight(1))
     }
@@ -42,7 +42,7 @@ case class MonteCarloNetworkAgent(stateVisitMap: Map[String, Int] = Map(),
     val selectedAction = if (Random.nextDouble() <= epsilonRate) {
       randomAction(environment)
     } else {
-      val selectedActionCell = stateActionNetwork.predictActionCell(environment.board.grid)
+      val selectedActionCell = stateActionNetwork.predictActionCell(environment.board.grid, playerType)
       environment.possibleActions.filter(action => action.xIndex == selectedActionCell.xIndex && action.yIndex == selectedActionCell.yIndex).head
     }
 
@@ -59,8 +59,8 @@ case class MonteCarloNetworkAgent(stateVisitMap: Map[String, Int] = Map(),
   def train(actionVisitMemoriesList: List[List[ActionVisitMemory]]): MonteCarloAgent = {
     val filteredActionVisitMemoriesList = ListUtils.takeRandomBatch(actionVisitMemoriesList, AdversarialArguments.networkBatchSize)
     filteredActionVisitMemoriesList.foreach(actionVisitMemories => {
-      val environment       = actionVisitMemories.head.environment
-      val visitList = actionVisitMemories.map(_.visits.toDouble)
+      val environment = actionVisitMemories.head.environment
+      val visitList   = actionVisitMemories.map(_.visits.toDouble)
       val filteredVisitList = environment.board.grid.flatten.map(cell => {
         val matchingActionVisitMemory = actionVisitMemories.find(actionVisitMemory => actionVisitMemory.action.xIndex == cell.xIndex && actionVisitMemory.action.yIndex == cell.yIndex)
 
@@ -71,8 +71,9 @@ case class MonteCarloNetworkAgent(stateVisitMap: Map[String, Int] = Map(),
         }
       })
 
-      val labels = ListUtils.softMax(filteredVisitList)
-      stateActionNetwork.fit(environment.board.grid, labels)
+      val playerType = actionVisitMemories.head.playerType
+      val labels     = ListUtils.softMax(filteredVisitList)
+      stateActionNetwork.fit(environment.board.grid, labels, playerType)
     })
 
     val potentialNewEpsilonRate = epsilonRate * AdversarialArguments.epsilonDecayRate
@@ -86,5 +87,9 @@ case class MonteCarloNetworkAgent(stateVisitMap: Map[String, Int] = Map(),
   def save(size: Int, epoch: Int): Unit = {
     val file = new File(AdversarialArguments.getModelPath(size, epoch))
     stateActionNetwork.model.save(file)
+  }
+
+  def reset: MonteCarloAgent = {
+    MonteCarloNetworkAgent(stateActionNetwork = stateActionNetwork, epsilonRate = epsilonRate)
   }
 }

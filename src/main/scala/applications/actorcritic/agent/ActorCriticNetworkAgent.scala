@@ -2,6 +2,7 @@ package applications.actorcritic.agent
 
 import environment.Environment
 import applications.actorcritic.SoloArguments._
+import applications.mcts.PlayerType
 import base.Memory
 
 
@@ -63,7 +64,7 @@ case class NetworkActorCriticAgent(initialEnvironment: Environment,
       val criticEligibility = currentAgent.criticEligibilities(stateKey)
 
       val newStateValue        = stateValue + (tableCriticLearningRate * temporalDifferenceError * criticEligibility)
-      currentAgent.stateValueNetwork.fit(memory.environment.board.grid, newStateValue)
+      currentAgent.stateValueNetwork.fit(memory.environment.board.grid, newStateValue, PlayerType.Player1)
 
       val newCriticEligibility   = criticDiscountFactor * criticEligibilityDecayRate * criticEligibility
       val newCriticEligibilities = currentAgent.criticEligibilities + (stateKey -> newCriticEligibility)

@@ -1,6 +1,7 @@
 package applications.actorcritic.agent
 
 import applications.actorcritic.SoloArguments
+import applications.mcts.PlayerType
 import base.Network
 import environment.{Cell, Environment}
 import org.deeplearning4j.nn.api.OptimizationAlgorithm
@@ -57,6 +58,6 @@ case class StateValueNetwork(size: Int) extends Network {
   }
 
   def predictValue(grid: List[List[Cell]]): Double = {
-    predict(grid).head
+    predict(grid, PlayerType.Player1).head
   }
 }

@@ -34,7 +34,7 @@ object TournamentMain {
           out.write("mabrandh".getBytes())
           out.flush()
         } else if (currentLine contains "password") {
-          out.write("".getBytes())
+          out.write(Pass.password.getBytes())
           out.flush()
         } else if (currentLine contains "Welcome") {
           // Start playing tournament
@@ -75,6 +75,8 @@ object TournamentMain {
 
   def playTournament(in: BufferedReader, out: PrintStream): Unit = {
     var continue = true
+    var games = 0
+    var wins = 0
 
     while (continue) {
       val state = SocketUtils.nextLine(in)
@@ -94,6 +96,12 @@ object TournamentMain {
         println(s"StartPlayer: ${startPlayerType}")
       } else if (state == "Game end") {
         val winner   = SocketUtils.nextLine(in).toInt
+        if (winner == 1) wins += 1
+        games += 1
+//        if (games == AdversarialArguments.tournamentGames) {
+//          continue = false
+//          println(f"Wins ${wins}/${games}")
+//        }
         val endState = SocketUtils.nextLine(in)
         println(s"Winner: $winner")
       } else if (state == "Series end") {
@@ -110,9 +118,12 @@ object TournamentMain {
         continue = false
       } else {
         val gridList           = state.replace("(", "").replace(")", "").split(", ").map(_.toInt).toList
+        val player = gridList.take(1).head
+        val playerType = PlayerType(player)
         val processedGridList  = gridList.drop(1)
         val environment        = HexEnvironment(processedGridList)
-        val selectedActionCell = stateActionNetwork.predictActionCell(environment.board.grid)
+        println(environment.toString)
+        val selectedActionCell = stateActionNetwork.predictActionCell(environment.board.grid, playerType)
         val actionString       = f"(${selectedActionCell.yIndex}, ${selectedActionCell.xIndex})"
         out.write(actionString.getBytes())
         out.flush()
